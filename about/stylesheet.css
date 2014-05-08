@@ -1,0 +1,73 @@
+AbstractList > #qt_scrollarea_viewport > #Container {
+  background-color: none;
+  border: none; }
+  AbstractList > #qt_scrollarea_viewport > #Container > #Header {
+    border: none;
+    background-color: #252525; }
+
+ApplicationBase #CascadingButton {
+  background-image: url("icon_application");
+  min-width: 20px;
+  min-height: 20px;
+  margin: 5px;
+  /*padding: 5px;*/ }
+  ApplicationBase #CascadingButton:checked {
+    background-color: #191919; }
+
+EntryWidget {
+  background-image: url("icon_minus");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  min-width: 80px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  color: white; }
+  EntryWidget[type='int'] {
+    color: #e0c01f; }
+  EntryWidget[type='float'] {
+    color: #a0e01f; }
+  EntryWidget[type='string'] {
+    color: #ed7878; }
+  EntryWidget[type='text'] {
+    color: #e05f1f; }
+  EntryWidget[type='bool'] {
+    color: #e0a01f; }
+  EntryWidget[type='null'] {
+    background-image: url("icon_flag");
+    color: #e0e01f; }
+
+GroupWidget {
+  background-image: url("button_expand");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  font-weight: bold; }
+
+ImprintWidget {
+  /*background-color: blue;*/ }
+
+/*Editors*/
+QWidget[metaeditor="true"] {
+  border: 2px solid #252525;
+  border-top: none; }
+
+BoolWidget QCheckBox {
+  margin: 5px;
+  min-width: 50px;
+  background-color: #191919; }
+
+StringWidget {
+  min-height: 35px;
+  min-width: 200px; }
+
+IntWidget, FloatWidget {
+  min-width: 50px; }

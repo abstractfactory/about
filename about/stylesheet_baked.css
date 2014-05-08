@@ -1,0 +1,544 @@
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\stylesheet.css" -------*/
+
+QWidget {
+  color: white;
+  background-color: transparent;
+  selection-color: white;
+  selection-background-color: hsva(0, 0, 100%, 10%);
+  background-repeat: none;
+  background-position: center;
+  border: none;
+  outline: none; }
+
+QWidget:item:hover {
+  background-color: #2e2e2e; }
+
+QWidget:item:selected {
+  background-color: #3a3a3a; }
+
+QScrollArea {
+  background-color: transparent; }
+
+QAbstractItemView {
+  font-size: 13px; }
+
+QMenu {
+  background-color: hsv(0, 0, 10%);
+  border: 1px solid hsv(0, 0, 30%); }
+
+QMenu::item {
+  /* sets background of menu item. set this to something non-transparent
+   if you want menu color and menu item color to be different */
+  background-color: hsv(0, 0, 21%);
+  padding-left: 30px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-right: 10px; }
+
+QMenu::item:selected {
+  border-color: hsv(0, 0, 100%);
+  background-color: hsv(0, 0, 40%); }
+
+QMenu::separator {
+  height: 1px;
+  background: hsv(0, 0, 5%);
+  margin-left: 10px;
+  margin-right: 5px; }
+
+QScrollBar:vertical {
+  background-color: transparent;
+  border-top: none;
+  margin: 0px 0px 0px 0px; }
+
+QScrollBar:horizontal {
+  background-color: transparent;
+  border-left: none;
+  border-right: none;
+  margin: 0px 0px 0px 0px; }
+
+QScrollBar::handle {
+  margin: 3px;
+  border-radius: 4px;
+  background: hsva(0, 0, 100%, 10%);
+  min-height: 20px;
+  min-width: 20px; }
+
+QScrollBar::add-line {
+  background: white;
+  width: 0px;
+  height: 0px;
+  subcontrol-position: bottom;
+  subcontrol-origin: margin; }
+
+QScrollBar::sub-line {
+  background: white;
+  height: 0px;
+  width: 0px;
+  subcontrol-position: top;
+  subcontrol-origin: margin; }
+
+QScrollBar::add-page, QScrollBar::sub-page {
+  background: none; }
+
+QComboBox,
+QLineEdit {
+  height: 25px; }
+
+QSpinBox, QDoubleSpinBox {
+  min-height: 40px; }
+  QSpinBox::up-button, QSpinBox::down-button, QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    background-color: #252525;
+    min-height: 20px;
+    min-width: 20px; }
+    QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
+      background-color: #3f3f3f; }
+    QSpinBox::up-button:pressed, QSpinBox::down-button:pressed, QDoubleSpinBox::up-button:pressed, QDoubleSpinBox::down-button:pressed {
+      background-color: #2a2a2a; }
+  QSpinBox::up-button, QDoubleSpinBox::up-button {
+    background-image: url("icon_arrow_up"); }
+  QSpinBox::down-button, QDoubleSpinBox::down-button {
+    background-image: url("icon_arrow_down"); }
+
+QCheckBox::indicator {
+  background-color: #323232;
+  /*min-height: 40px;*/
+  /*min-width: 25px;*/ }
+  QCheckBox::indicator:hover {
+    background-color: #4c4c4c; }
+  QCheckBox::indicator:pressed {
+    background-color: #656565; }
+  QCheckBox::indicator:checked {
+    background-image: url("button_remove");
+    background-repeat: none;
+    background-position: center; }
+
+QComboBox::drop-down {
+  width: 20px;
+  background-color: hsv(0, 0, 20%); }
+  QComboBox::drop-down:hover {
+    background-color: hsv(0, 0, 30%); }
+  QComboBox::drop-down:pressed {
+    background-color: hsv(0, 0, 40%); }
+
+QSplitter:handle {
+  background-color: hsv(0, 0, 20%); }
+
+QMessageBox {
+  background-color: #4b4b4b; }
+  QMessageBox QPushButton {
+    padding: 5px; }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\widgets\pyqt5\window\stylesheet.css" -------*/
+
+WindowBase > #Wrapper {
+  background-color: #4b4b4b;
+  border: 1px outset #3e3e3e; }
+  WindowBase > #Wrapper > #Header {
+    background-image: url("title");
+    background-position: left; }
+    WindowBase > #Wrapper > #Header #Menu QPushButton {
+      min-width: 30px;
+      max-width: 30px;
+      min-height: 30px;
+      max-height: 30px; }
+
+#CloseButton {
+  background-image: url("button_close"); }
+
+#MinimiseButton {
+  background-image: url("button_minimise"); }
+
+#HelpButton {
+  background-image: url("button_help"); }
+
+#RefreshButton {
+  background-image: url("button_refresh"); }
+
+QMessageBox {
+  background-color: #4b4b4b;
+  border: 1px outset #3e3e3e;
+  min-width: 300px; }
+  QMessageBox QPushButton {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: 1px outset #3e3e3e; }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\widgets\pyqt5\application\stylesheet.css" -------*/
+
+ApplicationBase #Log {
+  /*font-family: "Consolas";*/
+  border: 1px solid #191919;
+  margin-right: 10px;
+  margin-left: 10px;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  background-color: hsva(0, 0, 0, 50%); }
+
+Inform, Alert {
+  min-width: 250px;
+  min-height: 80px;
+  background-color: #0c0c0c;
+  border: 1px solid #4c4c4c;
+  padding-right: -4px;
+  border-right: 3px solid green; }
+  Inform #Title, Alert #Title {
+    font-weight: bold; }
+  Inform #Container, Alert #Container {
+    background-color: #0c0c0c;
+    border: 1px solid #4c4c4c; }
+  Inform #Icon, Alert #Icon {
+    min-width: 16px;
+    min-height: 16px; }
+  Inform #AcceptButton, Alert #AcceptButton {
+    min-width: 80px;
+    min-height: 25px;
+    background-color: #4b4b4b; }
+    Inform #AcceptButton:hover, Alert #AcceptButton:hover {
+      background-color: #7e7e7e; }
+    Inform #AcceptButton:hover:pressed, Alert #AcceptButton:hover:pressed {
+      background-color: #989898; }
+  Inform #RejectButton, Alert #RejectButton {
+    min-width: 80px;
+    min-height: 25px;
+    background-color: #4b4b4b; }
+    Inform #RejectButton:hover, Alert #RejectButton:hover {
+      background-color: #7e7e7e; }
+    Inform #RejectButton:hover:pressed, Alert #RejectButton:hover:pressed {
+      background-color: #989898; }
+  Inform #CloseButton, Alert #CloseButton {
+    min-width: 25px;
+    min-height: 25px; }
+    Inform #CloseButton:hover, Alert #CloseButton:hover {
+      background-color: #7e7e7e; }
+    Inform #CloseButton:hover:pressed, Alert #CloseButton:hover:pressed {
+      background-color: #989898; }
+  Inform #ActionButton, Alert #ActionButton {
+    background-color: #4b4b4b;
+    min-width: 50px;
+    min-height: 25px; }
+    Inform #ActionButton:hover, Alert #ActionButton:hover {
+      background-color: #7e7e7e; }
+    Inform #ActionButton:hover:pressed, Alert #ActionButton:hover:pressed {
+      background-color: #989898; }
+  Inform #Icon, Alert #Icon {
+    background-image: url("icon_notification"); }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\widgets\pyqt5\stylesheet.css" -------*/
+
+/*Main stylesheet, applies to all PyQt5 widgets*/
+QSplitter::handle:horizontal, QSplitter::handle:vertical {
+  background-color: #4b4b4b; }
+
+QPushButton {
+  min-height: 35px;
+  background-color: #4b4b4b; }
+  QPushButton:hover {
+    background-color: #656565; }
+  QPushButton:checked {
+    background-color: #191919; }
+  QPushButton:checked:hover {
+    background-color: #333333; }
+  QPushButton:pressed {
+    background-color: #656565; }
+
+ItemWidget {
+  border: 1px outset #3e3e3e; }
+
+TreeWidget {
+  background-image: url("node_default");
+  background-position: right center;
+  padding-left: 10px;
+  padding-right: 20px;
+  text-align: left; }
+  TreeWidget[workingdir='true'] {
+    border-left: 2px solid #bf4040;
+    font-weight: bold; }
+  TreeWidget[last='true'] {
+    background-image: url("node_executable"); }
+  TreeWidget[hidden='true'] {
+    color: hvs(0, 0, 100%, 30%); }
+
+OptionWidget {
+  /*@include outset;*/
+  /*@include inset;*/
+  background-color: #323232;
+  border: none;
+  /*background-color: hsl(10%, 30%, 30%);*/ }
+  OptionWidget QLabel {
+    font-family: 'courier-new';
+    /*font-size: 10pt;*/ }
+  OptionWidget #Header {
+    padding-left: 10px;
+    /*min-width: 100px;*/
+    max-width: 100px;
+    /*vertical-align: center;*/
+    /*min-height: 20px;*/
+    /*border-top-right-radius: 5px;*/
+    /*border-bottom-right-radius: 5px;*/
+    background-color: #191919; }
+  OptionWidget #Body #Brief {
+    /*padding-right: 10px;*/
+    /*background-color: blue;*/ }
+  OptionWidget #Body #Image {
+    /*vertical-align: top;*/
+    min-width: 120px;
+    max-width: 120px;
+    min-height: 81px;
+    max-height: 81px;
+    background-color: #bf4040;
+    /*background-image: url('test_skydivers');*/ }
+
+CommandWidget {
+  border-style: solid;
+  border-width: 1px;
+  border-left-color: #252525;
+  border-right-color: #656565;
+  border-top-color: #252525;
+  border-bottom-color: #656565;
+  background-color: #323232;
+  background-image: url("node_executable");
+  background-position: right;
+  min-width: 50px;
+  border-radius: 3px;
+  padding: 5px;
+  padding-right: 25px;
+  margin: 5px;
+  text-align: left;
+  min-height: 15px; }
+  CommandWidget:disabled {
+    background-color: #4c4c4c;
+    color: gray; }
+
+NewWidget {
+  background-color: transparent;
+  border: none;
+  color: transparent;
+  padding-left: 5px;
+  padding-right: 5px; }
+  NewWidget:hover {
+    color: hsva(0, 0, 100%, 80%);
+    padding: -2px;
+    background-color: transparent;
+    border: 2px dashed hsva(0, 0, 100%, 10%); }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\widgets\pyqt5\list\stylesheet.css" -------*/
+
+AbstractList {
+  min-width: 140px; }
+  AbstractList > #qt_scrollarea_viewport > #Container {
+    /*AbstractList is inheriting QScrollArea which has additional
+    widgets parented underneath it, ending with our own #Container*/
+    background-color: #4b4b4b;
+    border: 1px outset #3e3e3e; }
+    AbstractList > #qt_scrollarea_viewport > #Container > #Header {
+      border-style: solid;
+      border-width: 1px;
+      border-left-color: #656565;
+      border-right-color: #323232;
+      border-top-color: #656565;
+      border-bottom-color: #323232;
+      padding: 5px;
+      min-height: 15px;
+      max-height: 15px;
+      color: hsva(0, 0, 100%, 70%); }
+    AbstractList > #qt_scrollarea_viewport > #Container QPushButton[util='empty'] {
+      padding: -2px;
+      background-color: hsva(0, 0, 100%, 0%);
+      border: 2px dashed hsva(0, 0, 100%, 10%); }
+    AbstractList > #qt_scrollarea_viewport > #Container QPushButton[util='invisible'] {
+      color: transparent;
+      background-color: transparent;
+      border: none; }
+    AbstractList > #qt_scrollarea_viewport > #Container QPushButton[util='new'] {
+      background-color: transparent;
+      border: none;
+      color: transparent; }
+      AbstractList > #qt_scrollarea_viewport > #Container QPushButton[util='new']:hover {
+        color: white;
+        padding: -2px;
+        background-color: hsva(0, 0, 100%, 0%);
+        border: 2px dashed hsva(0, 0, 100%, 10%); }
+    AbstractList > #qt_scrollarea_viewport > #Container QPushButton[util='placeholder'] QLineEdit {
+      padding-left: -1px;
+      padding-right: 10px;
+      background-color: transparent;
+      text-align: left; }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\pigui\widgets\pyqt5\miller\stylesheet.css" -------*/
+
+AbstractMiller {
+  background-color: #323232;
+  border-width: 1px;
+  border-style: solid;
+  border-left-color: #252525;
+  border-right-color: #656565;
+  border-top-color: #252525;
+  border-bottom-color: #656565; }
+  AbstractMiller #Widget {
+    /*background-color: blue;*/ }
+  AbstractMiller #ColumnContainer {
+    /*background-color: green;*/
+    /*border-right-width: 10px;*/
+    /*border-image: url(miller_border) 25 repeat;*/ }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\src\python\2.7\about\stylesheet.css" -------*/
+
+AbstractList > #qt_scrollarea_viewport > #Container {
+  background-color: none;
+  border: none; }
+  AbstractList > #qt_scrollarea_viewport > #Container > #Header {
+    border: none;
+    background-color: #252525; }
+
+ApplicationBase #CascadingButton {
+  background-image: url("icon_application");
+  min-width: 20px;
+  min-height: 20px;
+  margin: 5px;
+  /*padding: 5px;*/ }
+  ApplicationBase #CascadingButton:checked {
+    background-color: #191919; }
+
+EntryWidget {
+  background-image: url("icon_minus");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  min-width: 80px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  color: white; }
+  EntryWidget[type='int'] {
+    color: #e0c01f; }
+  EntryWidget[type='float'] {
+    color: #a0e01f; }
+  EntryWidget[type='string'] {
+    color: #ed7878; }
+  EntryWidget[type='text'] {
+    color: #e05f1f; }
+  EntryWidget[type='bool'] {
+    color: #e0a01f; }
+  EntryWidget[type='null'] {
+    background-image: url("icon_flag");
+    color: #e0e01f; }
+
+GroupWidget {
+  background-image: url("button_expand");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  font-weight: bold; }
+
+ImprintWidget {
+  /*background-color: blue;*/ }
+
+/*Editors*/
+QWidget[metaeditor="true"] {
+  border: 2px solid #252525;
+  border-top: none; }
+
+BoolWidget QCheckBox {
+  margin: 5px;
+  min-width: 50px;
+  background-color: #191919; }
+
+StringWidget {
+  min-height: 35px;
+  min-width: 200px; }
+
+IntWidget, FloatWidget {
+  min-width: 50px; }
+
+
+/*------- Merging "C:\Users\marcus\Dropbox\AF\development\marcus\pipi\repos\about\about\stylesheet.css" -------*/
+
+AbstractList > #qt_scrollarea_viewport > #Container {
+  background-color: none;
+  border: none; }
+  AbstractList > #qt_scrollarea_viewport > #Container > #Header {
+    border: none;
+    background-color: #252525; }
+
+ApplicationBase #CascadingButton {
+  background-image: url("icon_application");
+  min-width: 20px;
+  min-height: 20px;
+  margin: 5px;
+  /*padding: 5px;*/ }
+  ApplicationBase #CascadingButton:checked {
+    background-color: #191919; }
+
+EntryWidget {
+  background-image: url("icon_minus");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  min-width: 80px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  color: white; }
+  EntryWidget[type='int'] {
+    color: #e0c01f; }
+  EntryWidget[type='float'] {
+    color: #a0e01f; }
+  EntryWidget[type='string'] {
+    color: #ed7878; }
+  EntryWidget[type='text'] {
+    color: #e05f1f; }
+  EntryWidget[type='bool'] {
+    color: #e0a01f; }
+  EntryWidget[type='null'] {
+    background-image: url("icon_flag");
+    color: #e0e01f; }
+
+GroupWidget {
+  background-image: url("button_expand");
+  background-position: right center;
+  background-color: none;
+  min-height: 25px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 25px;
+  text-align: left;
+  font-family: Consolas;
+  font-weight: bold; }
+
+ImprintWidget {
+  /*background-color: blue;*/ }
+
+/*Editors*/
+QWidget[metaeditor="true"] {
+  border: 2px solid #252525;
+  border-top: none; }
+
+BoolWidget QCheckBox {
+  margin: 5px;
+  min-width: 50px;
+  background-color: #191919; }
+
+StringWidget {
+  min-height: 35px;
+  min-width: 200px; }
+
+IntWidget, FloatWidget {
+  min-width: 50px; }
