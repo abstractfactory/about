@@ -1,38 +1,38 @@
 
 # import pigui.item
-import piapp.about.entryitem
+import about.item
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 
-class DateItem(piapp.about.entryitem.EditorItem):
+class Item(about.item.EditorItem):
     def __init__(self, *args, **kwargs):
-        super(DateItem, self).__init__(*args, **kwargs)
+        super(Item, self).__init__(*args, **kwargs)
 
         # date = self.getdata()
-        # self.widget.setDate(date)
+        # self.widget.set(date)
         # self.widget.setTime(date)
         self.widget.dateChanged.connect(self.modified_event)
 
     def modified_event(self, date):
         pass
-        # print "Date changed to: %r" % date
+        # print " changed to: %r" % date
         # self.event.emit(name='modified',
         #                 data=[True if date else False, self])
 
 
-class DateWidget(QtWidgets.QDateTimeEdit):
+class Widget(QtWidgets.QTimeEdit):
     def __init__(self, *args, **kwargs):
-        super(DateWidget, self).__init__(*args, **kwargs)
+        super(Widget, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_StyledBackground)
 
 
-class DateFamily(object):
+class Family(object):
     predicate = 'date'
-    ItemClass = DateItem
-    WidgetClass = DateWidget
+    ItemClass = Item
+    WidgetClass = Widget
 
 
 def register():
-    piapp.about.entryitem.EditorItem.register(DateFamily)
+    about.item.EditorItem.register(Family)

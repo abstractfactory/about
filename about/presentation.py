@@ -1,18 +1,16 @@
 
 import openmetadata as om
-om.setup_log('openmetadata')
 
 # pifou library
 import pifou
+import pifou.om
 import pifou.lib
 import pifou.signal
-pifou.setup_log()
 
 # pigui library
 import pigui
 import pigui.style
 import pigui.widgets.pyqt5.application
-pigui.setup_log()
 
 # pigui dependencies
 from PyQt5 import QtGui
@@ -20,21 +18,22 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 # Local library
+import about.item
 import about.view
 import about.editor
-import about.entryitem
 
-# Register supported editors
-about.editor.register()
-
-
-# Register style
+about.view.register()
 pigui.style.register('about')
+
+om.setup_log()
+pifou.setup_log()
+pigui.setup_log()
 
 
 class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
-    WINDOW_SIZE = (700, 500)  # px
-    FLUSH_DELAY = 4000  # ms
+    """About graphical user interface"""
+    WINDOW_SIZE = (600, 200)  # px
+    FLUSH_DELAY = 2000  # ms
 
     def __init__(self, parent=None):
         super(Widget, self).__init__(parent)
@@ -42,8 +41,14 @@ class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
         self.item = None
         self.miller = None
 
-        self.save_queue = set()
-        self.remove_queue = set()
+        # Signals
+        self.flushed = pifou.signal.Request(quiet=bool)
+        self.removed = pifou.signal.Request(node=object)
+        self.modified = pifou.signal.Signal(node=object, value=object)
+        self.added = pifou.signal.Request(name=basestring,
+                                          parent=object,
+                                          isparent=bool)
+
         self.flush_timer = QtCore.QTimer()
         self.flush_timer.timeout.connect(self.flush)
         self.safe_to_close = False
@@ -108,7 +113,8 @@ class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
     def event_handler(self, name, data):
         if name == 'modified':
             value, item = data[:2]
-            self.modified_event(value, item)
+            print "event_handler(): modifying %s=%s" % (item, value)
+            self.modified_event(item, value)
 
     def flush(self, quiet=False, confirm=False):
         """Process all pending tasks
@@ -118,26 +124,15 @@ class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
 
         """
 
-        def flush(quiet=False):
-            self.flush_timer.stop()
+        self.flush_timer.stop()
 
-            if not self.save_queue and not self.remove_queue:
-                return True
+        # Emit request
+        success = self.flushed(quiet)
 
-            while self.save_queue:
-                node = self.save_queue.pop()
-                om.flush(node)
-
-            while self.remove_queue:
-                node = self.remove_queue.pop()
-                om.remove(node)
-
-            if not quiet:
-                self.notify('Saved', 'Changes saved')
-
+        if success == 'nothing-to-save':
+            self.notify('Information', 'Nothing to save..')
             return True
 
-        success = flush(quiet)
         if confirm and not success:
             return self.confirm(
                 "Couldn't flush",
@@ -145,98 +140,85 @@ class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
                 "failed. If you close, they will be lost into "
                 "oblivion. \n\nClose?")
 
-        return success
+        if not quiet:
+            self.notify('Saved', 'Changes saved')
+
+        return True
 
     def toggle_cascading(self, inherit=False):
-        method = om.inherit if inherit else om.pull
-        about.entryitem.pull_method = method
-        self.reload()
+        # method = om.inherit if inherit else om.pull
+        # about.item.pull_method = method
+        # self.reload()
         self.notify('Cascading', 'Cascading metadata %s' %
                     ('ON' if inherit else 'OFF'))
 
     def remove_selected(self):
-        """Remove currently selected item from database"""
+        """Remove currently selected item from datastore"""
         current_item = self.miller.selection_model.current
         self.remove(current_item)
 
     def remove(self, item):
-        """Remove `item` from database"""
-        node = item.node
-
-        if node in self.save_queue:
-            self.save_queue.remove(node)
-        else:
-            self.remove_queue.add(node)
-            self.flush_timer.start(self.FLUSH_DELAY)
+        """Remove `item` from datastore"""
+        self.removed.emit(item.node)
 
         metalist = item.view
         metalist.remove_item(item)
 
-    def modified_event(self, value, item):
+    def modified_event(self, item, value):
         """A node has been modified via an editor"""
-        node = item.node
+        if value:
+            self.modified.emit(node=item.node, value=value)
 
-        if value is not None:
-            # When there is a value included
-            # in the event, update node. This won't be
-            # the case when e.g. when calling this event manually.
-            node.value = value
-
-        self.save_queue.add(node)
         self.flush_timer.start(self.FLUSH_DELAY)
 
-    def item_added_event(self, name, item, widget, iscollection=False):
-        new_node = om.Entry(name, parent=item.node)
-
+    def item_added_event(self, name, item, widget):
         # Use `queryKeyboardModifiers()` as opposed to queryKeyboardModifiers()
         # due to the latter not always being reliable and causing unpredictable
         # results from the perspective of the user adding a new item.
+        isparent = False
         modifiers = QtWidgets.QApplication.queryKeyboardModifiers()
         if modifiers & QtCore.Qt.ShiftModifier:
-            iscollection = True
+            isparent = True
 
-        new_node.iscollection = iscollection
+        # Request a new node to be added
+        new_node, status = self.added(name, item.node, isparent)
 
         # Does it already exist?
-        parent_path = item.node.path.as_str
-        if om.find(parent_path, name):
+        if status == 'exists':
             return self.notify('Exists', '%s already exists' % name)
 
         # Is it about to be written?
-        if new_node in self.save_queue:
+        if status == 'queued':
             return self.notify('Patience', '%s is about '
                                'to be written' % name)
 
-        # If user doesn't specify a suffix,
-        # default to being of type string.
-        if not new_node.iscollection and not new_node.path.suffix:
-            new_node.value = ''
-
-        new_item = about.entryitem.EntryItem.from_node(new_node)
-        self.modified_event(None, new_item)
+        new_item = about.item.EntryItem.from_node(new_node)
+        # self.modified_event(new_item, None)
 
         widget.add_item(new_item)
-        widget.sort()
+        # widget.sort()
 
-        self.flush()
+        # self.flush()
 
-    def load(self, item):
+        if status == 'success':
+            return self.notify('Message', '%s added' % name)
+
+    def loaded_event(self, item):
         self.item = item
         self.miller.clear()
         self.miller.load(item)
-        print "loading %r" % item
 
     def reload(self):
-        old_location = self.item.node
-        new_location = om.Location(old_location.raw_path)
-        item = self.item.from_node(new_location)
-        self.load(item)
+        # old_location = self.item.node
+        # new_location = om.Location(old_location.raw_path)
+        # item = self.item.from_node(new_location)
+        self.loaded_event(item)
 
     def animated_close(self):
         if self.safe_to_close:
             return super(Widget, self).animated_close()
 
-        if self.flush(confirm=True):
+        if self.flush(confirm=True, quiet=True):
             self.safe_to_close = True
             return super(Widget, self).animated_close()
 
@@ -244,33 +226,110 @@ class Widget(pigui.widgets.pyqt5.application.ApplicationBase):
         if self.safe_to_close:
             return super(Widget, self).closeEvent(event)
 
-        if not self.flush(confirm=True):
+        if not self.flush(confirm=True, quiet=True):
             return event.ignore()
 
         super(Widget, self).closeEvent(event)
 
 
 class Application(object):
+    """About business-logic"""
+
+    DEFAULT_TYPE = 'string'
+
     def __init__(self, widget=None):
-        self.widget = widget or Widget()
+        self.widget = widget or Widget
+        self.loaded = pifou.signal.Signal()
+
+        self.save_queue = set()
+        self.remove_queue = set()
+
+    def init_widget(self):
+        widget = self.widget()
+
+        self.loaded.connect(widget.loaded_event)
+
+        widget.flushed.connect(self.flush)
+        widget.removed.connect(self.remove)
+        widget.modified.connect(self.modify)
+        widget.added.connect(self.add)
+
+        widget.animated_show()
+
+        self.widget = widget
 
     def load(self, location):
-        item = about.entryitem.LocationItem.from_node(location)
-        self.widget.load(item)
+        # item = about.item.LocationItem.from_node(location)
+        item = about.item.LocationItem.from_node(location)
+        # print "Loading %s" % item
+        self.loaded.emit(item)
+
+    def add(self, name, parent, isparent):
+        path = parent.path + name
+        if not path.suffix:
+            path = path.copy(suffix=self.DEFAULT_TYPE)
+
+        new_node = pifou.pom.node.Node.from_str(path.as_str)
+        new_node.isparent = isparent
+        # print "Adding %s to %s" % (name, parent)
+        return new_node, 'success'
+
+    def flush(self, quiet=False):
+        status = 'nothing-to-save'
+
+        if not self.save_queue and not self.remove_queue:
+            return status
+
+        while self.save_queue:
+            node = self.save_queue.pop()
+
+            # parent = pifou.om.convert(node.path.parent.as_str)
+            # assert parent
+            # print "node.path=%s" % node.path
+            # print "parent=%s" % parent.path
+            # entry = pifou.om.Entry(node.path.name, parent=parent)
+            # entry.value = node.data['value']
+            # print "saving %s=%s" % (entry.path, entry.value)
+
+            status = 'saved'
+            # om.flush(entry)
+
+        while self.remove_queue:
+            node = self.remove_queue.pop()
+
+            entry = pifou.om.convert(node.path.as_str)
+            om.remove(entry)
+
+            status = 'saved'
+
+        return status
+
+    def remove(self, node):
+        if node in self.save_queue:
+            self.save_queue.remove(node)
+        else:
+            self.remove_queue.add(node)
+            self.flush_timer.start(self.FLUSH_DELAY)
+
+    def modify(self, node, value):
+        # print "Modifying %s=%s" % (node, value)
+        node.data['value'] = value
+        self.save_queue.add(node)
 
 
 def main(path):
     import pigui.util.pyqt5
 
-    location = om.Location(path)
+    node = pifou.pom.node.Node.from_str(path)
+    app = Application()
 
-    with pigui.util.pyqt5.app_context(use_baked_css=True):
-        app = Application()
-        app.load(location)
-        app.widget.animated_show()
+    # with pigui.util.pyqt5.app_context(use_baked_css=True):
+    with pigui.util.pyqt5.app_context():
+        app.init_widget()
+        app.load(node)
 
 
 if __name__ == '__main__':
-    # main(r'c:\users\marcus')
+    main(r'c:\users\marcus\om')
     # main(r'C:\Users\marcus\Dropbox\Apps')
-    main(r'S:\content\jobs\machine')
+    # main(r'S:\content\jobs\machine')

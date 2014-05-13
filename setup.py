@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
+
 from setuptools import setup, find_packages
 
 path = os.path.dirname(__file__)
@@ -24,12 +27,10 @@ setup(
     license=license,
     packages=find_packages(),
     package_data={
-        'about': [
-                    '*.pyw',
-                    '*.css',
-                    'bin/*.py'
-                    'bin/*.pyw',
-                ],
+        'about': ['*.pyw',
+                  '*.css',
+                  'bin/*.py'
+                  'bin/*.pyw'],
     },
     include_package_data=True,
 )

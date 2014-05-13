@@ -1,15 +1,15 @@
 
 # import pigui.item
-import piapp.about.entryitem
+import about.item
 
 from PyQt5 import QtWidgets
 
 
-class IntItem(piapp.about.entryitem.EditorItem):
+class Item(about.item.EditorItem):
     def __init__(self, *args, **kwargs):
-        super(IntItem, self).__init__(*args, **kwargs)
+        super(Item, self).__init__(*args, **kwargs)
 
-        value = self.getdata()
+        value = self.node.data.get('value')
         self.widget.setValue(value)
         self.widget.valueChanged.connect(self.modified_event)
 
@@ -18,17 +18,17 @@ class IntItem(piapp.about.entryitem.EditorItem):
                         data=[value, self])
 
 
-class IntWidget(QtWidgets.QSpinBox):
+class Widget(QtWidgets.QSpinBox):
     def __init__(self, *args, **kwargs):
-        super(IntWidget, self).__init__(*args, **kwargs)
+        super(Widget, self).__init__(*args, **kwargs)
         self.setRange(-99999999, 99999999)
 
 
-class IntFamily(object):
+class Family(object):
     predicate = 'int'
-    ItemClass = IntItem
-    WidgetClass = IntWidget
+    ItemClass = Item
+    WidgetClass = Widget
 
 
 def register():
-    piapp.about.entryitem.EditorItem.register(IntFamily)
+    about.item.EditorItem.register(Family)

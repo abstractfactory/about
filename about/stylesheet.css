@@ -52,9 +52,6 @@ GroupWidget {
   font-family: Consolas;
   font-weight: bold; }
 
-ImprintWidget {
-  /*background-color: blue;*/ }
-
 /*Editors*/
 QWidget[metaeditor="true"] {
   border: 2px solid #252525;

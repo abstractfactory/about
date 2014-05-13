@@ -1,12 +1,12 @@
 
 # # import pigui.item
-# import piapp.about.entryitem
+# import about.item
 
 # from PyQt5 import QtWidgets
 # from PyQt5 import QtCore
 
 
-# class BoolItem(piapp.about.entryitem.EditorItem):
+# class BoolItem(about.item.EditorItem):
 #     def __init__(self, *args, **kwargs):
 #         super(BoolItem, self).__init__(*args, **kwargs)
 
@@ -43,4 +43,4 @@
 
 
 # def register():
-#     piapp.about.entryitem.EditorItem.register(BoolFamily)
+#     about.item.EditorItem.register(BoolFamily)

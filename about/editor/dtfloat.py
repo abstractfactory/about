@@ -1,15 +1,15 @@
 
 # import pigui.item
-import piapp.about.entryitem
+import about.item
 
 from PyQt5 import QtWidgets
 
 
-class FloatItem(piapp.about.entryitem.EditorItem):
+class Item(about.item.EditorItem):
     def __init__(self, *args, **kwargs):
-        super(FloatItem, self).__init__(*args, **kwargs)
+        super(Item, self).__init__(*args, **kwargs)
 
-        value = self.getdata()
+        value = self.node.data.get('value')
         self.widget.setRange(-99999999, 99999999)
         self.widget.setValue(value)
         self.widget.valueChanged.connect(self.modified_event)
@@ -19,15 +19,15 @@ class FloatItem(piapp.about.entryitem.EditorItem):
                         data=[value, self])
 
 
-class FloatWidget(QtWidgets.QDoubleSpinBox):
+class Widget(QtWidgets.QDoubleSpinBox):
     pass
 
 
-class FloatFamily(object):
+class Family(object):
     predicate = 'float'
-    ItemClass = FloatItem
-    WidgetClass = FloatWidget
+    ItemClass = Item
+    WidgetClass = Widget
 
 
 def register():
-    piapp.about.entryitem.EditorItem.register(FloatFamily)
+    about.item.EditorItem.register(Family)

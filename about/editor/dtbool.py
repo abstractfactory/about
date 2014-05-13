@@ -1,16 +1,16 @@
 
 # import pigui.item
-import piapp.about.entryitem
+import about.item
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 
-class BoolItem(piapp.about.entryitem.EditorItem):
+class Item(about.item.EditorItem):
     def __init__(self, *args, **kwargs):
-        super(BoolItem, self).__init__(*args, **kwargs)
+        super(Item, self).__init__(*args, **kwargs)
 
-        state = self.getdata()
+        state = self.node.data.get('value')
         self.widget.checkbox.setChecked(state)
         self.widget.checkbox.stateChanged.connect(self.modified_event)
 
@@ -19,9 +19,9 @@ class BoolItem(piapp.about.entryitem.EditorItem):
                         data=[True if state else False, self])
 
 
-class BoolWidget(QtWidgets.QWidget):
+class Widget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(BoolWidget, self).__init__(*args, **kwargs)
+        super(Widget, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_StyledBackground)
 
         checkbox = QtWidgets.QCheckBox()
@@ -34,11 +34,11 @@ class BoolWidget(QtWidgets.QWidget):
         self.checkbox = checkbox
 
 
-class BoolFamily(object):
+class Family(object):
     predicate = 'bool'
-    ItemClass = BoolItem
-    WidgetClass = BoolWidget
+    ItemClass = Item
+    WidgetClass = Widget
 
 
 def register():
-    piapp.about.entryitem.EditorItem.register(BoolFamily)
+    about.item.EditorItem.register(Family)

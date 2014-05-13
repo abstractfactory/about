@@ -1,15 +1,14 @@
 
-# import pigui.item
-import piapp.about.entryitem
+import about.item
 
 from PyQt5 import QtWidgets
 
 
-class StringItem(piapp.about.entryitem.EditorItem):
+class Item(about.item.EditorItem):
     def __init__(self, *args, **kwargs):
-        super(StringItem, self).__init__(*args, **kwargs)
+        super(Item, self).__init__(*args, **kwargs)
 
-        text = self.getdata()
+        text = self.node.data['value']
         self.widget.setText(text)
         self.widget.textChanged.connect(self.modified_event)
 
@@ -18,15 +17,15 @@ class StringItem(piapp.about.entryitem.EditorItem):
                         data=[text, self])
 
 
-class StringWidget(QtWidgets.QLineEdit):
+class Widget(QtWidgets.QLineEdit):
     pass
 
 
-class StringFamily(object):
+class Family(object):
     predicate = 'string'
-    ItemClass = StringItem
-    WidgetClass = StringWidget
+    ItemClass = Item
+    WidgetClass = Widget
 
 
 def register():
-    piapp.about.entryitem.EditorItem.register(StringFamily)
+    about.item.EditorItem.register(Family)
