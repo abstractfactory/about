@@ -22,8 +22,16 @@ import sys
 basename = os.path.basename(__file__)
 
 
+def add_to_path():
+    root = os.path.abspath(__file__)
+    for x in range(3):
+        root = os.path.dirname(root)
+    sys.path.insert(0, root)
+    print "I: adding %r to PYTHONPATH" % root
+
+
 def generate():
-    from piapp import about
+    import about
 
     python_dir = os.path.dirname(sys.executable)
     pythonw_exec = os.path.join(python_dir, 'pythonw.exe')
@@ -46,8 +54,7 @@ def generate():
 
 
 def confirm():
-    comparison = os.path.join('piapp',
-                              'about',
+    comparison = os.path.join('about',
                               'bin',
                               basename)
 
@@ -65,6 +72,7 @@ Make sure you run from original directory:
 
 
 def main():
+    add_to_path()
     output = generate()
     sys.stdout.write('''
 {line}

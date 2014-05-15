@@ -1,34 +1,65 @@
-#!python
-
-"""Main entry point for build"""
 
 import os
 import sys
 
-# check_dependencies()
 
-# ------------------------------------------------------------
-
-
-import pifou
-if pifou.missing_dependencies:
-    import pifou.error
-    raise pifou.error.Dependency(pifou.missing_dependencies)
-
-from piapp.about import presentation
-
-# Make working directory local to About,
-# regardless of where this executable is being run from.
-# (This is important for local stylesheets to have any effect)
-working_directory = os.path.dirname(presentation.__file__)
-os.chdir(working_directory)
+def add_to_path():
+    root = os.path.abspath(__file__)
+    for x in range(3):
+        root = os.path.dirname(root)
+    sys.path.insert(0, root)
+    print "I: adding %r to PYTHONPATH" % root
 
 
-try:
-    path = sys.argv[1]
-except:
-    path = os.getcwd()
+def check_dependencies():
+    import pifou
+    if pifou.missing_dependencies:
+        import pifou.error
+        raise pifou.error.Dependency(pifou.missing_dependencies)
+
+
+def get_path():
+    try:
+        path = sys.argv[1]
+        print "I: Using ARGS"
+    except:
+        path = os.getcwd()
+        print "I: Using CWD"
+
+    # For now, don't bother with trying to add
+    # metadata to files.
+    if os.path.isfile(path):
+        path = os.path.dirname(path)
+
+    return path
+
+
+def init_cwd():
+    # Make working directory local to About,
+    # regardless of where this executable is being run from.
+    # (This is important for local stylesheets to have any effect)
+    working_directory = os.path.dirname(about.presentation.__file__)
+    os.chdir(working_directory)
 
 
 if __name__ == '__main__':
-    presentation.main(path)
+    message = '''
+ _____________
+|             |
+| About 0.5.2 |
+|_____________|
+
+Press CTRL-C to quit..
+
+-----------------------
+'''
+    print message
+    check_dependencies()
+    add_to_path()
+
+    import about.presentation
+    path = get_path()
+    init_cwd()
+
+    print "I: running About @ %r" % path
+    about.presentation.main(path)

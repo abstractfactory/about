@@ -1,3 +1,5 @@
+"""Write metadata for debug-purposes"""
+
 import os
 import openmetadata as om
 om.setup_log()

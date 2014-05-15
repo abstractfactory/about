@@ -7,12 +7,6 @@ import pigui.service
 import pigui.widgets.pyqt5.item
 
 from PyQt5 import QtWidgets
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-
-import openmetadata as om
-
-pull_method = om.pull
 
 
 @pifou.lib.log

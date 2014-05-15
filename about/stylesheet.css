@@ -5,13 +5,13 @@ AbstractList > #qt_scrollarea_viewport > #Container {
     border: none;
     background-color: #252525; }
 
-ApplicationBase #CascadingButton {
+Base #CascadingButton {
   background-image: url("icon_application");
   min-width: 20px;
   min-height: 20px;
   margin: 5px;
   /*padding: 5px;*/ }
-  ApplicationBase #CascadingButton:checked {
+  Base #CascadingButton:checked {
     background-color: #191919; }
 
 EntryWidget {
