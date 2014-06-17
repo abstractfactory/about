@@ -1,253 +1,233 @@
+from __future__ import absolute_import
+
+# standard library
+import os
 
 # pifou library
-import pifou
-import pifou.lib
-import pifou.signal
+import pifou.error
 
 # pigui library
 import pigui
 import pigui.style
-import pigui.widgets.pyqt5.application
+import pigui.service
+import pigui.pyqt5.event
+import pigui.pyqt5.model
+import pigui.pyqt5.widgets.miller.view
+import pigui.pyqt5.widgets.application.widget
 
-# pigui dependencies
-from PyQt5 import QtGui
+# pigui dependency
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-# Local library
-import about.item
+# local library
+import about
 import about.view
-import about.editor
+import about.item
+import about.event
+import about.model
+import about.settings
 
-about.view.register()
 pigui.style.register('about')
+pigui.setup_log()
+
+about.view.monkey_path()
 
 
-@pifou.lib.log
-class About(pigui.widgets.pyqt5.application.Base):
-    """About graphical user interface"""
-    WINDOW_SIZE = (600, 200)  # px
-    FLUSH_DELAY = 2000  # ms
+class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
+    """About controller"""
+
+    flush = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super(About, self).__init__(parent)
 
-        self.item = None
-        self.miller = None
+        # Pad the view, and inset background via CSS
+        canvas = QtWidgets.QWidget()
+        canvas.setObjectName('Canvas')
 
-        # Signals
-        self.removed = pifou.signal.Signal(node=object)
-        self.modified = pifou.signal.Signal(node=object, value=object)
+        view = pigui.pyqt5.widgets.miller.view.DefaultMiller()
+        view.setObjectName('View')
+        view.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                           QtWidgets.QSizePolicy.MinimumExpanding)
 
-        # Requests
-        self.request_flush = pifou.signal.Request()
-        self.request_add = pifou.signal.Request(name=basestring,
-                                                parent=object,
-                                                isparent=bool)
+        layout = QtWidgets.QHBoxLayout(canvas)
+        layout.setContentsMargins(1, 1, 1, 1)
+        layout.addWidget(view)
 
-        self.flush_timer = QtCore.QTimer()
-        self.flush_timer.timeout.connect(self.flush)
-        self.safe_to_close = False
+        widget = QtWidgets.QWidget()
 
-        def setup_header():
-            cascading = QtWidgets.QPushButton()
-            cascading.setCheckable(True)
-            cascading.setObjectName('CascadingButton')
-            cascading.toggled.connect(self.toggle_cascading)
-            cascading.setToolTip('Cascading metadata')
-
-            header = super(About, self).findChild(QtWidgets.QWidget, 'Header')
-            layout = header.layout()
-            layout.insertWidget(0, cascading)
-
-            return header
-
-        def setup_body():
-            body = QtWidgets.QWidget()
-
-            miller = about.view.Miller()
-            miller.setObjectName('Body')
-
-            # Signals
-            miller.new_item_added.connect(self.item_added_event)
-            miller.event.connect(self.event_handler)
-
-            layout = QtWidgets.QHBoxLayout(body)
-            layout.addWidget(miller)
-            layout.setContentsMargins(0, 0, 0, 0)
-
-            self.miller = miller
-
-            return body
-
-        setup_header()
-        body = setup_body()
-
-        superclass = super(About, self)
-        container = superclass.findChild(QtWidgets.QWidget, 'Container')
-        layout = container.layout()
-        layout.addWidget(body)
+        layout = QtWidgets.QHBoxLayout(widget)
+        layout.addWidget(canvas)
         layout.setContentsMargins(5, 0, 5, 5)
+        layout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
-        self.item_added = pifou.signal.Signal(data=object)
+        self.set_widget(widget)
 
-        # Overlay saved
-        self.saved_widget = QtWidgets.QLabel('saved', self)
-        self.saved_widget.hide()
+        flush_timer = QtCore.QTimer()
+        flush_timer.setSingleShot(True)
 
-        # Hotkey
-        save_sequence = QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S)
-        save_key = QtWidgets.QShortcut(save_sequence, self)
-        save_key.activated.connect(self.flush)
+        # References
+        self.view = view
+        self.model = None
+        self.flush_timer = flush_timer
 
-        remove_sequence = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
-        remove_key = QtWidgets.QShortcut(remove_sequence, self)
-        remove_key.activated.connect(self.remove_selected)
+    def set_model(self, model):
+        self.view.set_model(model)
+        self.model = model
 
-        self.resize(*self.WINDOW_SIZE)
+        model.saved.connect(self.model_saved_event)
+        model.error.connect(self.model_error_event)
 
-    def event_handler(self, name, data):
-        """Handle events coming up from composite widgets
-                          _______________
-                         |               |
-                         |     Event     |
-                         |_______________|
-                                 |
-                          _______v_______
-                         |               |
-                         |    Handler    |
-                         |_______________|
-                                 |
-                 ________________|_______________
-                |                |               |
-         _______v______   _______v______   ______v_______
-        |              | |              | |              |
-        |   Response   | |   Response   | |   Response   |
-        |______________| |______________| |______________|
+        # Delay actions performed on model until a pre-defined timeout.
+        # This is so that data won't get written too frequently by quick
+        # user interaction.
+        self.flush_timer.timeout.connect(model.flush)
 
-        """
+    def model_saved_event(self):
+        self.notify('Changes saved..')
 
-        if name == 'modified':
-            value, item = data[:2]
-            self.modified_event(item, value)
+    def model_error_event(self, exception):
+        self.notify(str(exception))
 
-    def flush(self, quiet=False, confirm=False):
-        """Process all pending tasks
+    def event(self, event):
+        if event.type() == pigui.pyqt5.event.Type.AddItemEvent:
+            """A new item is being created.
 
-        Attributes:
-            quiet (bool): Do not notify user
-            confirm (bool): In case of failure, confirm event with user
+            The event comes with the index of the parent in which
+            the new item is to be created. We'll use this index to
+            find the corresponding List-view and find the "New" item
+            within, and place the editor on-top of it.
 
-        """
+            """
 
-        self.flush_timer.stop()
+            lis = self.view.find_list(event.index)
+            placeholder = lis.findChild(QtWidgets.QWidget, 'New')
+            editor = pigui.pyqt5.widgets.item.CreatorItem('untitled',
+                                                          index=event.index,
+                                                          parent=placeholder)
 
-        # Emit request
-        success = self.request_flush()
+            # Overlap placeholder
+            editor.resize(placeholder.size())
+            editor.show()
 
-        if success == 'nothing-to-save':
-            self.notify('Information', 'Nothing to save..')
-            return True
+        elif event.type() == pigui.pyqt5.event.Type.EditItemEvent:
+            """An existing item is being edited.
 
-        if confirm and not success:
-            return self.confirm(
-                "Couldn't flush",
-                "There were pending writing operations, but they "
-                "failed. If you close, they will be lost into "
-                "oblivion. \n\nClose?")
+            Let's place an editor on-top of it.
 
-        if not quiet:
-            self.notify('Saved', 'Changes saved')
+            """
 
-        return True
+            label = self.model.data(index=event.index, key='display')
+            edited = event.view.indexes[event.index]
+            editor = pigui.pyqt5.widgets.item.RenamerItem(label,
+                                                          index=event.index,
+                                                          parent=edited)
+            # Overlap edited
+            editor.resize(edited.size())
+            editor.show()
 
-    def toggle_cascading(self, inherit=False):
-        # method = om.inherit if inherit else om.pull
-        # about.item.pull_method = method
-        # self.reload()
-        self.notify('Cascading', 'Cascading metadata %s' %
-                    ('ON' if inherit else 'OFF'))
+        elif event.type() == pigui.pyqt5.event.Type.ItemRenamedEvent:
+            """An item has been renamed
 
-    def remove_selected(self):
-        """Remove currently selected item from datastore"""
-        current_item = self.miller.selection_model.current
-        self.remove(current_item)
+            Signal the change to the model.
 
-    def remove(self, item):
-        """Remove `item` from datastore"""
-        self.removed.emit(node=item.node)
+            """
 
-        metalist = item.view
-        metalist.remove_item(item)
+            item = self.model.item(event.index)
+            data = event.data
+            self.model.set_data(index=event.index,
+                                key=pigui.pyqt5.model.Name,
+                                value=data)
 
-        self.flush_timer.start(self.FLUSH_DELAY)
+            self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-    def modified_event(self, item, value):
-        """A node has been modified via an editor"""
-        if value:
-            self.modified.emit(node=item.node, value=value)
+        elif event.type() == pigui.pyqt5.event.Type.ItemCreatedEvent:
+            """An item has been created
 
-        self.flush_timer.start(self.FLUSH_DELAY)
+            Signal the change to the model.
 
-    def item_added_event(self, name, item, widget):
-        # Use `queryKeyboardModifiers()` as opposed to queryKeyboardModifiers()
-        # due to the latter not always being reliable and causing unpredictable
-        # results from the perspective of the user adding a new item.
-        isparent = False
-        modifiers = QtWidgets.QApplication.queryKeyboardModifiers()
-        if modifiers & QtCore.Qt.ShiftModifier:
-            isparent = True
+            Behaviour:
+                Enter produces a leaf
+                Shift-enter produces a group
 
-        # Request a new node to be request_add
-        new_node, status = self.request_add(name, item.node, isparent)
+            """
 
-        # Does it already exist?
-        if status == 'exists':
-            return self.notify('Exists', '%s already exists' % name)
+            # Use `queryKeyboardModifiers()` as opposed to
+            # `queryKeyboardModifiers()` due to the latter not
+            # always being reliable and causing unpredictable
+            # results from the perspective of the user adding
+            # a new item.
+            group = False
+            modifiers = QtWidgets.QApplication.queryKeyboardModifiers()
+            if modifiers & QtCore.Qt.ShiftModifier:
+                group = True
 
-        # Is it about to be written?
-        if status == 'queued':
-            return self.notify('Patience', '%s is about '
-                               'to be written' % name)
+            name = event.data
 
-        print "value=%s" % new_node.data.get('value')
-        new_item = about.item.EntryItem.from_node(new_node)
-        # new_item.isparent = True
-        # self.modified_event(new_item, None)
+            parent_item = self.model.item(event.index)
 
-        widget.add_item(new_item)
-        # widget.sort()
+            try:
+                self.model.add_entry(name,
+                                     parent=event.index,
+                                     group=group)
 
-        # self.flush()
+            except pifou.error.Exists as e:
+                self.notify(str(e))
 
-        # if status == 'success':
-        #     return self.notify('Message', '%s request_add' % name)
+                # Re-open the editor to add more items
+                event = pigui.pyqt5.event.AddItemEvent(index=event.index)
+                QtWidgets.QApplication.postEvent(self, event)
 
-    def loaded_event(self, node):
-        item = about.item.LocationItem.from_node(node)
-        self.item = item
-        self.miller.clear()
-        self.miller.load(item)
+            # Re-open the editor to add more items
+            event = pigui.pyqt5.event.AddItemEvent(index=event.index)
+            QtWidgets.QApplication.postEvent(self, event)
 
-    def reload(self):
-        # old_location = self.item.node
-        # new_location = om.Location(old_location.raw_path)
-        # item = self.item.from_node(new_location)
-        self.loaded_event(item)
+        elif event.type() == pigui.pyqt5.event.Type.DataEditedEvent:
+            """The data of an item has been modified.
 
-    def animated_close(self):
-        if self.safe_to_close:
-            return super(About, self).animated_close()
+            Signal the change, and count-down until physically writing
+            to disk.
 
-        if self.flush(confirm=True, quiet=True):
-            self.safe_to_close = True
-            return super(About, self).animated_close()
+            """
 
-    def closeEvent(self, event):
-        if self.safe_to_close:
-            return super(About, self).closeEvent(event)
+            self.model.set_data(index=event.index,
+                                key=pigui.pyqt5.model.Value,
+                                value=event.data)
 
-        if not self.flush(confirm=True, quiet=True):
-            return event.ignore()
+            # Start the count-down
+            self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        super(About, self).closeEvent(event)
+        elif event.type() == pigui.pyqt5.event.Type.RemoveItemEvent:
+            """An item has been removed.
+
+            Notify the model.
+
+            """
+
+            item = self.model.item(event.index)
+            self.model.remove_item(event.index)
+
+            self.flush_timer.start(about.settings.FLUSH_DELAY)
+
+        elif event.type() == pigui.pyqt5.event.Type.OpenInExplorerEvent:
+            item = self.model.item(event.index)
+            pigui.service.open_in_explorer(item.path)
+
+        return super(About, self).event(event)
+
+
+if __name__ == '__main__':
+    import pigui.pyqt5.util
+
+    path = os.path.expanduser(r'~')
+
+    with pigui.pyqt5.util.application_context():
+
+        model = about.model.Model()
+
+        win = About()
+        win.set_model(model)
+        win.resize(*about.settings.WINDOW_SIZE)
+        win.show()
+
+        model.setup(uri=r'om:{}'.format(path))

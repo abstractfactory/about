@@ -1,0 +1,2 @@
+WINDOW_SIZE = (600, 400)  # px
+FLUSH_DELAY = 2000  # ms

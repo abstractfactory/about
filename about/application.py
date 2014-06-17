@@ -1,9 +1,15 @@
 
+import openmetadata as om
+om.setup_log()
+
 # pifou library
 import pifou
 import pifou.om
 import pifou.lib
 import pifou.signal
+
+# For flags
+import about
 
 
 @pifou.lib.log
@@ -25,16 +31,14 @@ class About(object):
 
     DEFAULT_TYPE = 'string'
 
-    def __init__(self, widget):
-        self.widget = widget
+    def __init__(self):
+        self.widget = None
         self.loaded = pifou.signal.Signal()
 
         self.save_queue = set()
         self.remove_queue = set()
 
-    def init_widget(self):
-        widget = self.widget()
-
+    def init_widget(self, widget):
         self.loaded.connect(widget.loaded_event)
 
         # Signals
@@ -50,6 +54,23 @@ class About(object):
         self.widget = widget
 
     def load(self, node):
+        """Load `node`
+
+        Description
+            Incoming node has the following path:
+            $ /home/marcus
+
+            But needs to reflect the metadata container-path:
+            $ /home/marcus/.meta
+
+        """
+
+        # Convert node to Open Metadata path
+        path = node.path
+        if not path.as_str.endswith(pifou.om.Path.CONTAINER):
+            path += pifou.om.Path.CONTAINER
+            node = node.copy(path=path)
+
         self.loaded.emit(node)
 
     def add(self, name, parent, isparent):
@@ -64,8 +85,13 @@ class About(object):
 
         """
 
+        print "Looking for %s in %s" % (name, parent.path)
+        exists = pifou.om.find(parent.path.as_str, name)
+        if exists:
+            return exists, about.EXISTS
+
         path = parent.path + name
-        if not path.suffix:
+        if not isparent and not path.suffix:
             path = path.copy(suffix=self.DEFAULT_TYPE)
 
         new_node = pifou.pom.node.Node.from_str(path.as_str)
@@ -77,7 +103,7 @@ class About(object):
 
         self.save_queue.add(new_node)
 
-        return new_node, 'success'
+        return new_node, about.SUCCESS
 
     def remove(self, node):
         """Remove `node` from datastore
@@ -125,7 +151,7 @@ class About(object):
 
         """
 
-        status = 'nothing-to-save'
+        status = about.NOTHING_TO_SAVE
 
         if not self.save_queue and not self.remove_queue:
             return status
@@ -133,20 +159,15 @@ class About(object):
         while self.save_queue:
             node = self.save_queue.pop()
 
-            # NOTE: This assumes that the parent already exists.
-            parent = pifou.om.convert(node.path.parent.as_str)
+            entry = pifou.om.convert(node.path.as_str)
+            entry.isparent = node.isparent
 
-            # TODO: This will prevent adding additional
-            # children to a not-already-written parent.
-            # This could however be considered non-fatal
-            # and superflous, at least at the moment.
-            assert parent
+            if not entry.isparent:
+                entry.value = node.data['value']
 
-            entry = pifou.om.Entry(node.path.name, parent=parent)
-            entry.value = node.data['value']
             pifou.om.flush(entry)
 
-            status = 'saved'
+            status = about.SAVED
 
         while self.remove_queue:
             node = self.remove_queue.pop()
@@ -154,6 +175,6 @@ class About(object):
             entry = pifou.om.convert(node.path.as_str)
             pifou.om.remove(entry)
 
-            status = 'saved'
+            status = about.SAVED
 
         return status

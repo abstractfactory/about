@@ -1,34 +1,28 @@
 
-# import pigui.item
-import about.item
+import pigui.pyqt5.event
+import pigui.pyqt5.widgets.item
 
-# from PyQt5 import QtCore
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class Item(about.item.EditorItem):
-    def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
+class Editor(pigui.pyqt5.widgets.item.BlankItem):
+    def __init__(self, default, index, parent=None):
+        super(Editor, self).__init__(index=index, parent=parent)
+        self.index = index
 
-        text = self.node.data.get('value')
-        self.widget.setPlainText(text)
-        self.widget.textChanged.connect(self.modified_event)
+        text = QtWidgets.QPlainTextEdit()
+        text.setPlainText(unicode(default))
+        text.textChanged.connect(self.data_changed_event)
 
-    def modified_event(self):
-        text = self.widget.toPlainText()
-        self.event.emit(name='modified',
-                        data=[text, self])
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(text)
+        layout.setAlignment(QtCore.Qt.AlignRight)
+        layout.setContentsMargins(0, 0, 0, 0)
 
+        self.text = text
 
-class Widget(QtWidgets.QPlainTextEdit):
-    pass
-
-
-class Family(object):
-    predicate = 'text'
-    ItemClass = Item
-    WidgetClass = Widget
-
-
-def register():
-    about.item.EditorItem.register(Family)
+    def data_changed_event(self):
+        event = pigui.pyqt5.event.DataEditedEvent(data=self.text.toPlainText(),
+                                                  index=self.index)
+        QtWidgets.QApplication.postEvent(self, event)

@@ -40,12 +40,11 @@ def main(path, debug=False):
         pigui.setup_log()
 
     node = pifou.pom.node.Node.from_str(path)
-    widget = about.widget.About
-    app = about.application.About(widget)
+    app = about.application.About()
 
-    # with pigui.util.pyqt5.app_context(use_baked_css=True):
     with pigui.util.pyqt5.app_context():
-        app.init_widget()
+        widget = about.widget.About()
+        app.init_widget(widget)
         app.load(node)
 
 

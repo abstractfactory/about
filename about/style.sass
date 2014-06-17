@@ -1,0 +1,88 @@
+$dark:      rgb(25, 25, 25)
+$mid:       rgb(50, 50, 50)
+$bright:    rgb(75, 75, 75)
+
+$red:       hsl(0, 50%, 50%)
+$highlight: hsl(35%, 50%, 80%)
+
+
+@mixin outset
+    border-style: solid
+    border-width: 1px
+    border-left-color: lighten($bright, 10%)
+    border-right-color: darken($bright, 10%)
+    border-top-color: lighten($bright, 10%)
+    border-bottom-color: darken($bright, 10%)
+
+
+@mixin inset
+    border-style: solid
+    border-width: 1px
+    border-left-color: darken($mid, 5%)
+    border-right-color: lighten($mid, 20%)
+    border-top-color: darken($mid, 5%)
+    border-bottom-color: lighten($mid, 20%)
+
+
+DefaultList
+    background-color: none
+    border: none
+
+
+About
+    #Canvas
+        @include inset
+        background-color: $mid
+
+    border: 10px solid red
+    background-color: blue
+    #CascadingButton
+        background-image: url("icon_application")
+        min-width: 20px
+        min-height: 20px
+        margin: 5px
+        /*padding: 5px*/
+
+        &:checked
+            background-color: $dark    
+
+
+Editor
+    @include inset
+    min-height: 30px
+    background-color: none
+
+    QCheckBox::indicator
+        background-color: $dark
+
+
+EntryItem
+    background-image: url("icon_minus")
+    background-position: right center
+    background-color: none
+    min-height: 25px
+    min-width: 80px
+    border: none
+    padding-left: 10px
+    padding-right: 25px
+    text-align: left
+    font-family: Consolas
+    color: white
+
+    &[type='int']       
+        color: hsl(50, 76%, 50%)
+    &[type='float']     
+        color: hsl(80, 76%, 50%)
+    &[type='string']    
+        color: hsl(0, 76%, 70%)
+    &[type='text']      
+        color: hsl(20, 76%, 50%)
+    &[type='bool']      
+        color: hsl(40, 76%, 50%)
+    &[type='null']
+        background-image: url("icon_flag")
+        color: hsl(60, 76%, 50%)
+    &[type='class']
+        color: hsl(70, 76%, 50%)
+    &[type='id']
+        color: hsl(85, 76%, 50%)

@@ -1,33 +1,31 @@
 
-# import pigui.item
-import about.item
-
 from PyQt5 import QtWidgets
 
+import pigui.pyqt5.event
+import pigui.pyqt5.widgets.item
 
-class Item(about.item.EditorItem):
-    def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
-
-        value = self.node.data.get('value')
-        self.widget.setRange(-99999999, 99999999)
-        self.widget.setValue(value)
-        self.widget.valueChanged.connect(self.modified_event)
-
-    def modified_event(self, value):
-        self.event.emit(name='modified',
-                        data=[value, self])
+from PyQt5 import QtCore
 
 
-class Widget(QtWidgets.QDoubleSpinBox):
-    pass
+class Editor(pigui.pyqt5.widgets.item.BlankItem):
+    def __init__(self, default, index, parent=None):
+        super(Editor, self).__init__(index=index, parent=parent)
+        self.index = index
 
+        spinbox = QtWidgets.QDoubleSpinBox()
+        spinbox.setValue(default)
+        spinbox.setRange(-99999999, 99999999)
+        spinbox.valueChanged.connect(self.data_changed_event)
 
-class Family(object):
-    predicate = 'float'
-    ItemClass = Item
-    WidgetClass = Widget
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(spinbox)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(QtCore.Qt.AlignRight)
 
+        self.spinbox = spinbox
 
-def register():
-    about.item.EditorItem.register(Family)
+    def data_changed_event(self, state):
+        event = pigui.pyqt5.event.DataEditedEvent(
+            data=self.spinbox.value(),
+            index=self.index)
+        QtWidgets.QApplication.postEvent(self, event)

@@ -1,44 +1,40 @@
 
-# import pigui.item
-import about.item
+import pigui.pyqt5.event
+import pigui.pyqt5.widgets.item
 
-from PyQt5 import QtWidgets
 from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 
-class Item(about.item.EditorItem):
-    def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
+class Editor(pigui.pyqt5.widgets.item.BlankItem):
+    @property
+    def data(self):
+        return self.checkbox.isChecked()
 
-        state = self.node.data.get('value')
-        self.widget.checkbox.setChecked(state)
-        self.widget.checkbox.stateChanged.connect(self.modified_event)
-
-    def modified_event(self, state):
-        self.event.emit(name='modified',
-                        data=[True if state else False, self])
-
-
-class Widget(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super(Widget, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_StyledBackground)
+    def __init__(self, default, index, parent=None):
+        super(Editor, self).__init__(index=index, parent=parent)
+        self.index = index
 
         checkbox = QtWidgets.QCheckBox()
+        checkbox.setChecked(default or False)
+        checkbox.stateChanged.connect(self.data_changed_event)
+
+        label = QtWidgets.QLabel('True' if default else 'False')
+        label.setObjectName('Label')
 
         layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(label)
         layout.addWidget(checkbox)
-        layout.setContentsMargins(*[0]*4)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setAlignment(QtCore.Qt.AlignRight)
+
+        self.setProperty('type', 'bool')
 
         self.checkbox = checkbox
 
-
-class Family(object):
-    predicate = 'bool'
-    ItemClass = Item
-    WidgetClass = Widget
-
-
-def register():
-    about.item.EditorItem.register(Family)
+    def data_changed_event(self, state):
+        label = self.findChild(QtWidgets.QLabel, 'Label')
+        label.setText('True' if state else 'False')
+        event = pigui.pyqt5.event.DataEditedEvent(data=self.data,
+                                                  index=self.index)
+        QtWidgets.QApplication.postEvent(self, event)
