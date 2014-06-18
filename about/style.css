@@ -9,9 +9,9 @@ About {
     border-style: solid;
     border-width: 1px;
     border-left-color: #252525;
-    border-right-color: #656565;
+    border-right-color: #3f3f3f;
     border-top-color: #252525;
-    border-bottom-color: #656565;
+    border-bottom-color: #3f3f3f;
     background-color: #323232; }
   About #CascadingButton {
     background-image: url("icon_application");
@@ -26,9 +26,9 @@ Editor {
   border-style: solid;
   border-width: 1px;
   border-left-color: #252525;
-  border-right-color: #656565;
+  border-right-color: #3f3f3f;
   border-top-color: #252525;
-  border-bottom-color: #656565;
+  border-bottom-color: #3f3f3f;
   min-height: 30px;
   background-color: none; }
   Editor QCheckBox::indicator {

@@ -9,18 +9,12 @@ import pifou.lib
 import pigui.pyqt5.model
 
 # pigui dependency
-import openmetadata
 from PyQt5 import QtCore
-
-# local library
-# import about.key
-
-# Dev-temp
-openmetadata.setup_log()
 
 
 class Item(pigui.pyqt5.model.ModelItem):
     def data(self, key):
+        """Expose Open Metadata propeties to model"""
         value = super(Item, self).data(key)
 
         if not value:
@@ -32,7 +26,22 @@ class Item(pigui.pyqt5.model.ModelItem):
                 node = self.data('node')
                 value = node.path.suffix
 
+            if key == 'display':
+                node = self.data('node')
+                value = node.path.name
+
+            if key == 'value':
+                node = self.data('node')
+                value = node.value
+
         return value
+
+    def set_data(self, key, value):
+        if key == 'path':
+            node = self.data('node')
+            node._path.set(value)
+        else:
+            return super(Item, self).set_data(key, value)
 
 
 @pifou.lib.log
@@ -47,12 +56,23 @@ class Model(pigui.pyqt5.model.Model):
     def setup(self, location):
         node = pifou.om.Location(location)
         root = self.create_item({'type': 'om',
-                                 'node': node,
-                                 'display': node.path.name})
+                                 'node': node})
         self.root_item = root
         self.model_reset.emit()
 
     def flush(self):
+        while self.save_queue:
+            index = self.save_queue.pop()
+            node = self.data(index, 'node')
+            node.value = self.data(index, 'value')
+
+            try:
+                pifou.om.flush(node)
+            except Exception as e:
+                # Put index back, so we may try again later.
+                self.save_queue.add(index)
+                return self.error.emit(e)
+
         self.flushed.emit()
 
     def create_item(self, data, parent=None):
@@ -64,17 +84,34 @@ class Model(pigui.pyqt5.model.Model):
         model_parent = self.item(parent)
         entry_parent = self.data(parent, 'node')
 
-        if not '.' in name:
+        if not group and not '.' in name:
             name += '.string'  # Default to string
 
         entry = pifou.om.Entry(name, parent=entry_parent)
 
+        if group:
+            entry.isparent = True
+
         # Physically write to disk
+        try:
+            pifou.om.flush(entry)
+        except Exception as e:
+            return self.error.emit(e)
 
         self.add_item({'type': 'om',
-                       'node': entry,
-                       'display': entry.path.name},
+                       'node': entry},
                       parent=model_parent)
+
+    def remove_item(self, index):
+        # Physically remove `index`
+        node = self.data(index, 'node')
+
+        try:
+            pifou.om.remove(node)
+        except Exception as e:
+            return self.error.emit(e)
+
+        super(Model, self).remove_item(index)
 
     def pull(self, index):
         node = self.data(index, 'node')
@@ -89,8 +126,7 @@ class Model(pigui.pyqt5.model.Model):
         if node.isparent:
             for child in node:
                 self.create_item({'type': 'om',
-                                  'node': child,
-                                  'display': child.path.name},
+                                  'node': child},
                                  parent=model_parent)
         else:
             self.create_item({'type': 'om-editor',
@@ -102,9 +138,11 @@ class Model(pigui.pyqt5.model.Model):
 
     def set_data(self, index, key, value):
         if key == pigui.pyqt5.model.Value:
+            """Save `value` in `index`"""
             self.save_queue.add(index)
 
         if key == pigui.pyqt5.model.Display:
+            """Rename `index` to `value`"""
             path = self.data(index, 'path')
             suffix = self.data(index, 'suffix')
 
@@ -124,5 +162,8 @@ class Model(pigui.pyqt5.model.Model):
             except OSError as e:
                 self.log.error(str(e))
                 return self.error.emit(e)
+
+            # Update node with new name
+            self.set_data(index, key='path', value=basename)
 
         super(Model, self).set_data(index, key, value)

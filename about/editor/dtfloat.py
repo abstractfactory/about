@@ -19,7 +19,7 @@ class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(spinbox)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(1, 1, 1, 1)
         layout.setAlignment(QtCore.Qt.AlignRight)
 
         self.spinbox = spinbox

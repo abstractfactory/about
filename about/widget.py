@@ -3,6 +3,7 @@ from __future__ import absolute_import
 # standard library
 import os
 import errno
+import logging
 
 # pifou library
 import pifou.error
@@ -17,6 +18,7 @@ import pigui.pyqt5.widgets.miller.view
 import pigui.pyqt5.widgets.application.widget
 
 # pigui dependency
+from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
@@ -28,7 +30,22 @@ import about.settings
 
 pigui.style.register('about')
 
-about.view.monkey_path()
+about.view.monkey_patch()
+
+log = logging.getLogger('about')
+log.setLevel(logging.INFO)
+# log.setLevel(logging.WARNING)
+
+formatter = logging.Formatter(
+    '%(asctime)s - '
+    '%(levelname)s - '
+    '%(name)s - '
+    '%(message)s',
+    '%H:%M:%S')
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+log.addHandler(stream_handler)
 
 
 class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
@@ -69,6 +86,14 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         self.model = None
         self.flush_timer = flush_timer
 
+        save_sequence = QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S)
+        save_key = QtWidgets.QShortcut(save_sequence, self)
+        save_key.activated.connect(self.flush)
+
+    def flush(self):
+        self.flush_timer.stop()
+        self.model.flush()
+
     def set_model(self, model):
         self.view.set_model(model)
         self.model = model
@@ -99,8 +124,8 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         ItemRenamedEvent = pigui.pyqt5.event.Type.ItemRenamedEvent
         ItemCreatedEvent = pigui.pyqt5.event.Type.ItemCreatedEvent
         DataEditedEvent = pigui.pyqt5.event.Type.DataEditedEvent
-        # RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
-        # OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
+        RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
+        OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
 
         # Handlers
         if event.type() == AddItemEvent:
@@ -202,34 +227,35 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
             # Start the count-down
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        # elif event.type() == RemoveItemEvent:
-        #     """An item is being removed.
+        elif event.type() == RemoveItemEvent:
+            """An item is being removed.
 
-        #     Notify the model.
+            Notify the model.
 
-        #     """
+            """
 
-        #     item = self.model.item(event.index)
-        #     self.model.remove_item(event.index)
+            self.model.remove_item(event.index)
 
-        #     self.flush_timer.start(about.settings.FLUSH_DELAY)
-
-        # elif event.type() == OpenInExplorerEvent:
-        #     item = self.model.item(event.index)
-        #     pigui.service.open_in_explorer(item.path)
+        elif event.type() == OpenInExplorerEvent:
+            path = self.model.data(event.index, 'path')
+            pigui.service.open_in_explorer(path)
 
         return super(About, self).event(event)
 
 
 if __name__ == '__main__':
-    import logging
     import pigui
     import pifou
+    import logging
+    import openmetadata
 
     log = pigui.setup_log()
     log.setLevel(logging.DEBUG)
 
     log = pifou.setup_log()
+    log.setLevel(logging.DEBUG)
+
+    log = openmetadata.setup_log()
     log.setLevel(logging.DEBUG)
 
     import pigui.pyqt5.util
