@@ -46,7 +46,7 @@ if __name__ == '__main__':
     message = '''
  _____________
 |             |
-| About 0.5.2 |
+| About 0.5.4 |
 |_____________|
 
 Press CTRL-C to quit..

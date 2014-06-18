@@ -27,11 +27,10 @@ import pifou.pom.node
 
 # pigui library
 import pigui
-import pigui.util.pyqt5
+import pigui.pyqt5.util
 
 # Local library
-import about.widget
-import about.application
+import about.controller
 
 
 def main(path, debug=False):
@@ -39,13 +38,26 @@ def main(path, debug=False):
         pifou.setup_log()
         pigui.setup_log()
 
-    node = pifou.pom.node.Node.from_str(path)
-    app = about.application.About()
+        import logging
+        import openmetadata
 
-    with pigui.util.pyqt5.app_context():
-        widget = about.widget.About()
-        app.init_widget(widget)
-        app.load(node)
+        log = pigui.setup_log()
+        log.setLevel(logging.DEBUG)
+
+        log = pifou.setup_log()
+        log.setLevel(logging.DEBUG)
+
+        log = openmetadata.setup_log()
+        log.setLevel(logging.DEBUG)
+
+    with pigui.pyqt5.util.application_context():
+        model = about.model.Model()
+        win = about.controller.About()
+        win.set_model(model)
+        win.resize(*about.settings.WINDOW_SIZE)
+        win.show()
+
+        model.setup(path)
 
 
 if __name__ == '__main__':
