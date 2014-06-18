@@ -10,17 +10,17 @@ class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
     """If no editor is available for an delegate
 
     Arguments:
-        ext     -- The extension for which there is no editor
+        suffix     -- The extension for which there is no editor
         index   -- Index of parent model-delegate
         parent  -- Parent widget-delegate
 
     """
 
-    def __init__(self, ext, index, parent=None):
+    def __init__(self, suffix, index, parent=None):
         super(Editor, self).__init__(index=index, parent=parent)
         self.index = index
 
-        label = QtWidgets.QLabel('No editor for type "{}"'.format(ext))
+        label = QtWidgets.QLabel('No editor for type "{}"'.format(suffix))
         label.setObjectName('Label')
 
         layout = QtWidgets.QHBoxLayout(self)

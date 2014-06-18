@@ -20,7 +20,7 @@ class EntryDelegate(pigui.pyqt5.widgets.delegate.TreeDelegate):
             QtWidgets.QApplication.postEvent(self, event)
 
         elif label == "Recycle":
-            event = pigui.pyqt5.event.RemoveDelegateEvent(index=self.index)
+            event = pigui.pyqt5.event.RemoveItemEvent(index=self.index)
             QtWidgets.QApplication.postEvent(self, event)
 
     def contextMenuEvent(self, event):
@@ -36,5 +36,5 @@ class EntryDelegate(pigui.pyqt5.widgets.delegate.TreeDelegate):
         menu.exec_(event.globalPos())
 
     def mouseDoubleClickEvent(self, event):
-        event = pigui.pyqt5.event.EditDelegateEvent(index=self.index)
+        event = pigui.pyqt5.event.EditItemEvent(index=self.index)
         QtWidgets.QApplication.postEvent(self, event)

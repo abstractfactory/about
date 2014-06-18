@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 # standard library
 import os
+import errno
 
 # pifou library
 import pifou.error
@@ -22,12 +23,10 @@ from PyQt5 import QtWidgets
 # local library
 import about
 import about.view
-import about.event
 import about.model
 import about.settings
 
 pigui.style.register('about')
-pigui.setup_log()
 
 about.view.monkey_path()
 
@@ -74,7 +73,7 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         self.view.set_model(model)
         self.model = model
 
-        model.saved.connect(self.model_saved_event)
+        model.flushed.connect(self.model_flushed_event)
         model.error.connect(self.model_error_event)
 
         # Delay actions performed on model until a pre-defined timeout.
@@ -82,11 +81,15 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         # user interaction.
         self.flush_timer.timeout.connect(model.flush)
 
-    def model_saved_event(self):
+    def model_flushed_event(self):
         self.notify('Changes saved..')
 
     def model_error_event(self, exception):
-        self.notify(str(exception))
+        if isinstance(exception, OSError):
+            if exception.errno == errno.EEXIST:
+                self.notify("Already exists")
+        else:
+            self.notify(str(exception))
 
     def event(self, event):
 
@@ -96,8 +99,8 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         ItemRenamedEvent = pigui.pyqt5.event.Type.ItemRenamedEvent
         ItemCreatedEvent = pigui.pyqt5.event.Type.ItemCreatedEvent
         DataEditedEvent = pigui.pyqt5.event.Type.DataEditedEvent
-        RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
-        OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
+        # RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
+        # OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
 
         # Handlers
         if event.type() == AddItemEvent:
@@ -105,13 +108,13 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             The event comes with the index of the parent in which
             the new item is to be created. We'll use this index to
-            find the corresponding List-view and find the "New" item
+            find the corresponding List-view and find the "Footer" item
             within, and place the editor on-top of it.
 
             """
 
             lis = self.view.find_list(event.index)
-            placeholder = lis.findChild(QtWidgets.QWidget, 'New')
+            placeholder = lis.findChild(QtWidgets.QWidget, 'Footer')
             editor = pigui.pyqt5.widgets.delegate.CreatorDelegate(
                 'untitled',
                 index=event.index,
@@ -146,11 +149,10 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             """
 
-            item = self.model.item(event.index)
-            data = event.data
+            name = event.data
             self.model.set_data(index=event.index,
-                                key=pigui.pyqt5.model.Name,
-                                value=data)
+                                key=pigui.pyqt5.model.Display,
+                                value=name)
 
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
@@ -170,9 +172,12 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
             if modifiers & QtCore.Qt.ShiftModifier:
                 group = True
 
+            label = event.data
+            index = event.index
+
             try:
-                self.model.add_entry(name=event.data,
-                                     parent=event.index,
+                self.model.add_entry(name=label,
+                                     parent=index,
                                      group=group)
 
             except pifou.error.Exists as e:
@@ -197,26 +202,36 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
             # Start the count-down
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        elif event.type() == RemoveItemEvent:
-            """An item is being removed.
+        # elif event.type() == RemoveItemEvent:
+        #     """An item is being removed.
 
-            Notify the model.
+        #     Notify the model.
 
-            """
+        #     """
 
-            item = self.model.item(event.index)
-            self.model.remove_item(event.index)
+        #     item = self.model.item(event.index)
+        #     self.model.remove_item(event.index)
 
-            self.flush_timer.start(about.settings.FLUSH_DELAY)
+        #     self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        elif event.type() == OpenInExplorerEvent:
-            item = self.model.item(event.index)
-            pigui.service.open_in_explorer(item.path)
+        # elif event.type() == OpenInExplorerEvent:
+        #     item = self.model.item(event.index)
+        #     pigui.service.open_in_explorer(item.path)
 
         return super(About, self).event(event)
 
 
 if __name__ == '__main__':
+    import logging
+    import pigui
+    import pifou
+
+    log = pigui.setup_log()
+    log.setLevel(logging.DEBUG)
+
+    log = pifou.setup_log()
+    log.setLevel(logging.DEBUG)
+
     import pigui.pyqt5.util
 
     path = os.path.expanduser(r'~')
@@ -230,4 +245,4 @@ if __name__ == '__main__':
         win.resize(*about.settings.WINDOW_SIZE)
         win.show()
 
-        model.setup(location=path)
+        model.setup(path)

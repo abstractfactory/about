@@ -34,7 +34,7 @@ Editor {
   Editor QCheckBox::indicator {
     background-color: #191919; }
 
-EntryItem {
+EntryDelegate {
   background-image: url("icon_minus");
   background-position: right center;
   background-color: none;
@@ -46,20 +46,20 @@ EntryItem {
   text-align: left;
   font-family: Consolas;
   color: white; }
-  EntryItem[type='int'] {
+  EntryDelegate[type='int'] {
     color: #e0c01f; }
-  EntryItem[type='float'] {
+  EntryDelegate[type='float'] {
     color: #a0e01f; }
-  EntryItem[type='string'] {
+  EntryDelegate[type='string'] {
     color: #ed7878; }
-  EntryItem[type='text'] {
+  EntryDelegate[type='text'] {
     color: #e05f1f; }
-  EntryItem[type='bool'] {
+  EntryDelegate[type='bool'] {
     color: #e0a01f; }
-  EntryItem[type='null'] {
+  EntryDelegate[type='null'] {
     background-image: url("icon_flag");
     color: #e0e01f; }
-  EntryItem[type='class'] {
+  EntryDelegate[type='class'] {
     color: #c0e01f; }
-  EntryItem[type='id'] {
+  EntryDelegate[type='id'] {
     color: #90e01f; }

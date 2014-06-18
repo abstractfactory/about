@@ -8,12 +8,12 @@ from about.editor import noeditor
 
 
 mapping = {
-    '.string': dtstring,
-    '.bool': dtbool,
-    '.int': dtint,
-    '.float': dtfloat,
-    '.text': dttext,
-    # '.date': dtdate,
+    'string': dtstring,
+    'bool': dtbool,
+    'int': dtint,
+    'float': dtfloat,
+    'text': dttext,
+    # 'date': dtdate,
     'no-editor': noeditor
 }
 
