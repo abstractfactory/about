@@ -28,7 +28,7 @@ class Item(pigui.pyqt5.model.ModelItem):
 
             if key == 'display':
                 node = self.data('node')
-                value = node.path.name
+                value = node.name
 
             if key == 'value':
                 node = self.data('node')
