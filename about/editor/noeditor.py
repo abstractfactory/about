@@ -1,18 +1,18 @@
 
 import pigui.pyqt5.event
-import pigui.pyqt5.widgets.item
+import pigui.pyqt5.widgets.delegate
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class Editor(pigui.pyqt5.widgets.item.BlankItem):
-    """If no editor is available for an item
+class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
+    """If no editor is available for an delegate
 
     Arguments:
         ext     -- The extension for which there is no editor
-        index   -- Index of parent model-item
-        parent  -- Parent widget-item
+        index   -- Index of parent model-delegate
+        parent  -- Parent widget-delegate
 
     """
 

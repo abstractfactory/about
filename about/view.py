@@ -4,7 +4,7 @@ import os
 import pigui.pyqt5.widgets.list.view
 import pigui.pyqt5.widgets.miller.view
 
-import about.item
+import about.delegate
 import about.editor
 
 # from PyQt5 import QtWidgets
@@ -13,10 +13,10 @@ AbstractList = pigui.pyqt5.widgets.list.view.AbstractList
 
 
 class List(AbstractList):
-    def create_item(self, label, index, parent=None):
-        item = super(List, self).create_item(label, index, parent)
-        if item:
-            return item
+    def create_delegate(self, label, index, parent=None):
+        delegate = super(List, self).create_delegate(label, index, parent)
+        if delegate:
+            return delegate
 
         uri = self.model.uri(index)
         path = self.model.path(uri)
@@ -35,13 +35,13 @@ class List(AbstractList):
                 Editor = about.editor.get('no-editor')
                 return Editor(ext, index=index)
 
-        item = about.item.EntryItem(label=label, index=index)
+        delegate = about.delegate.EntryDelegate(label=label, index=index)
 
         if ext:
             # For use in CSS
-            item.setProperty('type', ext.strip("."))
+            delegate.setProperty('type', ext.strip("."))
 
-        return item
+        return delegate
 
 
 def create_list(self, index):

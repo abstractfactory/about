@@ -1,14 +1,14 @@
 
-# # import pigui.item
-# import about.item
+# # import pigui.delegate
+# import about.delegate
 
 # from PyQt5 import QtWidgets
 # from PyQt5 import QtCore
 
 
-# class BoolItem(about.item.EditorItem):
+# class BoolDelegate(about.delegate.EditorDelegate):
 #     def __init__(self, *args, **kwargs):
-#         super(BoolItem, self).__init__(*args, **kwargs)
+#         super(BoolDelegate, self).__init__(*args, **kwargs)
 
 #         state = self.getdata()
 #         self.widget.checkbox.setChecked(state)
@@ -38,9 +38,9 @@
 
 # class BoolFamily(object):
 #     predicate = 'bool'
-#     ItemClass = BoolItem
+#     DelegateClass = BoolDelegate
 #     WidgetClass = BoolWidget
 
 
 # def register():
-#     about.item.EditorItem.register(BoolFamily)
+#     about.delegate.EditorDelegate.register(BoolFamily)

@@ -2,12 +2,12 @@
 from PyQt5 import QtWidgets
 
 import pigui.pyqt5.event
-import pigui.pyqt5.widgets.item
+import pigui.pyqt5.widgets.delegate
 
 from PyQt5 import QtCore
 
 
-class Editor(pigui.pyqt5.widgets.item.BlankItem):
+class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
     def __init__(self, default, index, parent=None):
         super(Editor, self).__init__(index=index, parent=parent)
         self.index = index

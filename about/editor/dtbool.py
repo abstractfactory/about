@@ -1,12 +1,12 @@
 
 import pigui.pyqt5.event
-import pigui.pyqt5.widgets.item
+import pigui.pyqt5.widgets.delegate
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class Editor(pigui.pyqt5.widgets.item.BlankItem):
+class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
     @property
     def data(self):
         return self.checkbox.isChecked()

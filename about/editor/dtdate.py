@@ -1,14 +1,14 @@
 
-# import pigui.item
-import about.item
+# import pigui.delegate
+import about.delegate
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 
-class Item(about.item.EditorItem):
+class Delegate(about.delegate.EditorDelegate):
     def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
+        super(Delegate, self).__init__(*args, **kwargs)
 
         # date = self.getdata()
         # self.widget.set(date)
@@ -30,9 +30,9 @@ class Widget(QtWidgets.QTimeEdit):
 
 class Family(object):
     predicate = 'date'
-    ItemClass = Item
+    DelegateClass = Delegate
     WidgetClass = Widget
 
 
 def register():
-    about.item.EditorItem.register(Family)
+    about.delegate.EditorDelegate.register(Family)

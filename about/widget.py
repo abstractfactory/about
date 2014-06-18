@@ -22,7 +22,6 @@ from PyQt5 import QtWidgets
 # local library
 import about
 import about.view
-import about.item
 import about.event
 import about.model
 import about.settings
@@ -90,7 +89,18 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         self.notify(str(exception))
 
     def event(self, event):
-        if event.type() == pigui.pyqt5.event.Type.AddItemEvent:
+
+        # Events handled
+        AddItemEvent = pigui.pyqt5.event.Type.AddItemEvent
+        EditItemEvent = pigui.pyqt5.event.Type.EditItemEvent
+        ItemRenamedEvent = pigui.pyqt5.event.Type.ItemRenamedEvent
+        ItemCreatedEvent = pigui.pyqt5.event.Type.ItemCreatedEvent
+        DataEditedEvent = pigui.pyqt5.event.Type.DataEditedEvent
+        RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
+        OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
+
+        # Handlers
+        if event.type() == AddItemEvent:
             """A new item is being created.
 
             The event comes with the index of the parent in which
@@ -102,32 +112,35 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             lis = self.view.find_list(event.index)
             placeholder = lis.findChild(QtWidgets.QWidget, 'New')
-            editor = pigui.pyqt5.widgets.item.CreatorItem('untitled',
-                                                          index=event.index,
-                                                          parent=placeholder)
+            editor = pigui.pyqt5.widgets.delegate.CreatorDelegate(
+                'untitled',
+                index=event.index,
+                parent=placeholder)
 
             # Overlap placeholder
             editor.resize(placeholder.size())
             editor.show()
 
-        elif event.type() == pigui.pyqt5.event.Type.EditItemEvent:
+        elif event.type() == EditItemEvent:
             """An existing item is being edited.
 
-            Let's place an editor on-top of it.
+            Place an editor on-top of it.
 
             """
 
             label = self.model.data(index=event.index, key='display')
             edited = event.view.indexes[event.index]
-            editor = pigui.pyqt5.widgets.item.RenamerItem(label,
-                                                          index=event.index,
-                                                          parent=edited)
+            editor = pigui.pyqt5.widgets.delegate.RenamerDelegate(
+                label,
+                index=event.index,
+                parent=edited)
+
             # Overlap edited
             editor.resize(edited.size())
             editor.show()
 
-        elif event.type() == pigui.pyqt5.event.Type.ItemRenamedEvent:
-            """An item has been renamed
+        elif event.type() == ItemRenamedEvent:
+            """An item is being renamed
 
             Signal the change to the model.
 
@@ -141,49 +154,36 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        elif event.type() == pigui.pyqt5.event.Type.ItemCreatedEvent:
-            """An item has been created
+        elif event.type() == ItemCreatedEvent:
+            """An item is being created
 
             Signal the change to the model.
 
             Behaviour:
-                Enter produces a leaf
-                Shift-enter produces a group
+                - Enter produces a leaf
+                - Shift-enter produces a group
 
             """
 
-            # Use `queryKeyboardModifiers()` as opposed to
-            # `queryKeyboardModifiers()` due to the latter not
-            # always being reliable and causing unpredictable
-            # results from the perspective of the user adding
-            # a new item.
             group = False
             modifiers = QtWidgets.QApplication.queryKeyboardModifiers()
             if modifiers & QtCore.Qt.ShiftModifier:
                 group = True
 
-            name = event.data
-
-            parent_item = self.model.item(event.index)
-
             try:
-                self.model.add_entry(name,
+                self.model.add_entry(name=event.data,
                                      parent=event.index,
                                      group=group)
 
             except pifou.error.Exists as e:
                 self.notify(str(e))
 
-                # Re-open the editor to add more items
-                event = pigui.pyqt5.event.AddItemEvent(index=event.index)
-                QtWidgets.QApplication.postEvent(self, event)
-
             # Re-open the editor to add more items
             event = pigui.pyqt5.event.AddItemEvent(index=event.index)
             QtWidgets.QApplication.postEvent(self, event)
 
-        elif event.type() == pigui.pyqt5.event.Type.DataEditedEvent:
-            """The data of an item has been modified.
+        elif event.type() == DataEditedEvent:
+            """The data of an item is being modified.
 
             Signal the change, and count-down until physically writing
             to disk.
@@ -197,8 +197,8 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
             # Start the count-down
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        elif event.type() == pigui.pyqt5.event.Type.RemoveItemEvent:
-            """An item has been removed.
+        elif event.type() == RemoveItemEvent:
+            """An item is being removed.
 
             Notify the model.
 
@@ -209,7 +209,7 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             self.flush_timer.start(about.settings.FLUSH_DELAY)
 
-        elif event.type() == pigui.pyqt5.event.Type.OpenInExplorerEvent:
+        elif event.type() == OpenInExplorerEvent:
             item = self.model.item(event.index)
             pigui.service.open_in_explorer(item.path)
 
@@ -230,4 +230,4 @@ if __name__ == '__main__':
         win.resize(*about.settings.WINDOW_SIZE)
         win.show()
 
-        model.setup(uri=r'om:{}'.format(path))
+        model.setup(location=path)
