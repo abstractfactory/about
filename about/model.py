@@ -17,7 +17,7 @@ class Item(pigui.pyqt5.model.ModelItem):
         """Expose Open Metadata propeties to model"""
         value = super(Item, self).data(key)
 
-        if not value:
+        if not value and self.data('type') in ('entry', 'editor'):
             if key == 'path':
                 node = self.data('node')
                 value = node.path.as_str
@@ -46,7 +46,6 @@ class Item(pigui.pyqt5.model.ModelItem):
 
 @pifou.lib.log
 class Model(pigui.pyqt5.model.Model):
-    error = QtCore.pyqtSignal(Exception)
     flushed = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
@@ -55,7 +54,7 @@ class Model(pigui.pyqt5.model.Model):
 
     def setup(self, location):
         node = pifou.om.Location(location)
-        root = self.create_item({'type': 'om',
+        root = self.create_item({'type': 'entry',
                                  'node': node})
         self.root_item = root
         self.model_reset.emit()
@@ -71,17 +70,26 @@ class Model(pigui.pyqt5.model.Model):
             except Exception as e:
                 # Put index back, so we may try again later.
                 self.save_queue.add(index)
-                return self.error.emit(e)
+                self.error.emit(e)
+                raise
 
         self.flushed.emit()
 
     def create_item(self, data, parent=None):
-        item = Item(data, parent)
+        item = Item(data, parent=self.indexes.get(parent))
         self.register_item(item)
         return item
 
     def add_entry(self, name, parent, group=False):
-        model_parent = self.item(parent)
+        """Add new Open Metadarta Entry onto self
+
+        Arguments:
+            name (str): Name of new Entry
+            parent (str): Index of new Model Item
+            group (bool): Should the entry be able to contain children?
+
+        """
+
         entry_parent = self.data(parent, 'node')
 
         if not group and not '.' in name:
@@ -98,9 +106,9 @@ class Model(pigui.pyqt5.model.Model):
         except Exception as e:
             return self.error.emit(e)
 
-        self.add_item({'type': 'om',
+        self.add_item({'type': 'entry',
                        'node': entry},
-                      parent=model_parent)
+                      parent=parent)
 
     def remove_item(self, index):
         # Physically remove `index`
@@ -121,18 +129,16 @@ class Model(pigui.pyqt5.model.Model):
         except pifou.om.error.Exists:
             pass
 
-        model_parent = self.item(index)
-
         if node.isparent:
             for child in node:
-                self.create_item({'type': 'om',
+                self.create_item({'type': 'entry',
                                   'node': child},
-                                 parent=model_parent)
+                                 parent=index)
         else:
-            self.create_item({'type': 'om-editor',
+            self.create_item({'type': 'editor',
                               'node': node,
                               'default': node.value},
-                             parent=model_parent)
+                             parent=index)
 
         super(Model, self).pull(index)
 

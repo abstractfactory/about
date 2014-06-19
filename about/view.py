@@ -11,7 +11,7 @@ DefaultList = pigui.pyqt5.widgets.list.view.DefaultList
 def create_delegate(self, index):
     typ = self.model.data(index, 'type')
 
-    if typ == 'om-editor':
+    if typ == 'editor':
         suffix = self.model.data(index, 'suffix')
         default = self.model.data(index, 'default')
         value = self.model.data(index, 'value')
@@ -22,7 +22,7 @@ def create_delegate(self, index):
         else:
             return about.editor.noeditor.Editor(suffix=suffix, index=index)
 
-    elif typ == 'om':
+    elif typ == 'entry':
         label = self.model.data(index, 'display')
         suffix = self.model.data(index, 'suffix')
         delegate = about.delegate.EntryDelegate(label=label, index=index)

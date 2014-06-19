@@ -126,8 +126,14 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
         DataEditedEvent = pigui.pyqt5.event.Type.DataEditedEvent
         RemoveItemEvent = pigui.pyqt5.event.Type.RemoveItemEvent
         OpenInExplorerEvent = pigui.pyqt5.event.Type.OpenInExplorerEvent
+        Close = QtCore.QEvent.Close
 
         # Handlers
+        if event.type() == Close:
+            # Save changes on close
+            # TODO: Ignore close on error
+            self.flush()
+
         if event.type() == AddItemEvent:
             """A new item is being created.
 
@@ -138,11 +144,16 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
             """
 
-            lis = self.view.find_list(event.index)
+            # Add to parent, not the Footer item
+            index = event.index
+            if self.model.data(event.index, 'type') == 'Footer':
+                index = self.model.data(event.index, 'parent')
+
+            lis = self.view.find_list(index)
             placeholder = lis.findChild(QtWidgets.QWidget, 'Footer')
             editor = pigui.pyqt5.widgets.delegate.CreatorDelegate(
                 'untitled',
-                index=event.index,
+                index=index,
                 parent=placeholder)
 
             # Overlap placeholder
@@ -198,12 +209,12 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
                 group = True
 
             label = event.data
-            index = event.index
+            parent = event.index
 
             try:
                 self.model.add_entry(name=label,
-                                     parent=index,
-                                     group=group)
+                                     group=group,
+                                     parent=parent)
 
             except pifou.error.Exists as e:
                 self.notify(str(e))
