@@ -18,9 +18,10 @@ class Editor(pigui.pyqt5.widgets.delegate.BlankDelegate):
 
     def __init__(self, suffix, index, parent=None):
         super(Editor, self).__init__(index=index, parent=parent)
+        self.setObjectName('NoEditor')
         self.index = index
 
-        label = QtWidgets.QLabel('No editor for type "{}"'.format(suffix))
+        label = QtWidgets.QLabel('N/A'.format(suffix))
         label.setObjectName('Label')
 
         layout = QtWidgets.QHBoxLayout(self)

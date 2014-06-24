@@ -55,6 +55,7 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
 
     def __init__(self, parent=None):
         super(About, self).__init__(parent)
+        self.setWindowTitle('About')
 
         # Pad the view, and inset background via CSS
         canvas = QtWidgets.QWidget()
@@ -149,16 +150,18 @@ class About(pigui.pyqt5.widgets.application.widget.ApplicationBase):
             if self.model.data(event.index, 'type') == 'Footer':
                 index = self.model.data(event.index, 'parent')
 
-            lis = self.view.find_list(index)
-            placeholder = lis.findChild(QtWidgets.QWidget, 'Footer')
-            editor = pigui.pyqt5.widgets.delegate.CreatorDelegate(
-                'untitled',
-                index=index,
-                parent=placeholder)
+            # Do not add anything to leaf-entries
+            if not self.model.data(index, 'isgroup'):
+                lis = self.view.find_list(index)
+                placeholder = lis.findChild(QtWidgets.QWidget, 'Footer')
+                editor = pigui.pyqt5.widgets.delegate.CreatorDelegate(
+                    'untitled',
+                    index=index,
+                    parent=placeholder)
 
-            # Overlap placeholder
-            editor.resize(placeholder.size())
-            editor.show()
+                # Overlap placeholder
+                editor.resize(placeholder.size())
+                editor.show()
 
         elif event.type() == EditItemEvent:
             """An existing item is being edited.

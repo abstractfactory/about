@@ -26,7 +26,7 @@ def create_delegate(self, index):
         label = self.model.data(index, 'display')
         suffix = self.model.data(index, 'suffix')
         delegate = about.delegate.EntryDelegate(label=label, index=index)
-        delegate.setProperty('type', suffix)
+        delegate.setProperty('suffix', suffix)
         return delegate
 
     else:

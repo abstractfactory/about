@@ -37,7 +37,7 @@ About
     border: 10px solid red
     background-color: blue
     #CascadingButton
-        background-image: url("icon_application")
+        background-image: url(icon_application)
         min-width: 20px
         min-height: 20px
         margin: 5px
@@ -56,8 +56,19 @@ Editor
         background-color: $dark
 
 
+#NoEditor
+    border: none
+
+    QLabel
+        font-family: Ubuntu
+        font-family: Consolas
+        color: gray
+        font-size: 15pt
+        font-style: bold
+
+
 EntryDelegate
-    background-image: url("icon_minus")
+    background-image: url(icon_minus)
     background-position: right center
     background-color: none
     min-height: 25px
@@ -69,20 +80,24 @@ EntryDelegate
     font-family: Consolas
     color: white
 
-    &[type='int']       
+    &[suffix=int]
         color: hsl(50, 76%, 50%)
-    &[type='float']     
+    &[suffix=float]     
         color: hsl(80, 76%, 50%)
-    &[type='string']    
+    &[suffix=string]    
         color: hsl(0, 76%, 70%)
-    &[type='text']      
+    &[suffix=text]      
         color: hsl(20, 76%, 50%)
-    &[type='bool']      
+    &[suffix=bool]      
         color: hsl(40, 76%, 50%)
-    &[type='null']
-        background-image: url("icon_flag")
+    &[suffix=null]
+        background-image: url(icon_flag)
         color: hsl(60, 76%, 50%)
-    &[type='class']
+    &[suffix=class]
         color: hsl(70, 76%, 50%)
-    &[type='id']
+    &[suffix=id]
         color: hsl(85, 76%, 50%)
+    &[suffix=class]
+        color: hsl(0%, 100%, 70%)
+        font-weight: bold
+        background-image: url(class)

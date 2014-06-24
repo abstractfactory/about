@@ -22,17 +22,20 @@ class Item(pigui.pyqt5.model.ModelItem):
                 node = self.data('node')
                 value = node.path.as_str
 
-            if key == 'suffix':
+            elif key == 'suffix':
                 node = self.data('node')
                 value = node.path.suffix
 
-            if key == 'display':
+            elif key == 'display':
                 node = self.data('node')
                 value = node.name
 
-            if key == 'value':
+            elif key == 'value':
                 node = self.data('node')
                 value = node.value
+
+            elif key == 'isgroup':
+                value = self.data('node').isparent
 
         return value
 
@@ -135,6 +138,7 @@ class Model(pigui.pyqt5.model.Model):
                                   'node': child},
                                  parent=index)
         else:
+            print "Adding editor to: %s" % node.path
             self.create_item({'type': 'editor',
                               'node': node,
                               'default': node.value},
@@ -168,6 +172,10 @@ class Model(pigui.pyqt5.model.Model):
             except OSError as e:
                 self.log.error(str(e))
                 return self.error.emit(e)
+            else:
+                old = os.path.basename(old_path)
+                new = os.path.basename(new_path)
+                self.status.emit("Renamed {} to {}".format(old, new))
 
             # Update node with new name
             self.set_data(index, key='path', value=basename)

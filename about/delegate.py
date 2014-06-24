@@ -38,4 +38,3 @@ class EntryDelegate(pigui.pyqt5.widgets.delegate.TreeDelegate):
     def mouseDoubleClickEvent(self, event):
         event = pigui.pyqt5.event.EditItemEvent(index=self.index)
         QtWidgets.QApplication.postEvent(self, event)
-
