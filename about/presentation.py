@@ -23,7 +23,6 @@ Dependencies
 
 # pifou library
 import pifou
-import pifou.pom.node
 
 # pigui library
 import pigui

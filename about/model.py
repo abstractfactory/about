@@ -2,7 +2,7 @@
 import os
 
 # pifou library
-import pifou.om
+import pifou.metadata
 import pifou.lib
 
 # pigui library
@@ -13,6 +13,24 @@ from PyQt5 import QtCore
 
 
 class Item(pigui.pyqt5.model.ModelItem):
+    """Custom model item for About
+
+    Changes:
+        As opposed to storing plain paths as per the default model
+        implementation, the About model stores the Open Metadata objects
+        within each item. The :meth:`.data` method then accesses this
+        object along with providing the expected behaviour.
+
+        data:
+            path (str): Retrieve the full path from OM object
+            suffix (str): Retrieve suffix from OM object
+            display (str): Name of OM object
+            value (object): Value from OM object, this may be
+                of varying types and depends on the contained OM object.
+            isgroup (bool): Adapter for openmetadata.Entry.isparent
+
+    """
+
     def data(self, key):
         """Expose Open Metadata propeties to model"""
         value = super(Item, self).data(key)
@@ -40,6 +58,7 @@ class Item(pigui.pyqt5.model.ModelItem):
         return value
 
     def set_data(self, key, value):
+        """Override :meth:`.set_data` from default implementation"""
         if key == 'path':
             node = self.data('node')
             node._path.set(value)
@@ -49,6 +68,18 @@ class Item(pigui.pyqt5.model.ModelItem):
 
 @pifou.lib.log
 class Model(pigui.pyqt5.model.Model):
+    """Custom model for About
+
+    This implements delayed writing to disk via `flushing`. To
+    flush means to physically write to disk.
+
+    Attributes:
+        flushed: Signal, emitted whenever the model flushes changes
+            to disk.
+        save_queue: Delayed writes are stored here.
+
+    """
+
     flushed = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
@@ -56,7 +87,15 @@ class Model(pigui.pyqt5.model.Model):
         self.save_queue = set()
 
     def setup(self, location):
-        node = pifou.om.Location(location)
+        """Populate model with absolute path `location`
+
+        Arguments:
+            location (str): Absolute path to root directory from
+                which to pull metadata.
+
+        """
+
+        node = pifou.metadata.Location(location)
         root = self.create_item({'type': 'entry',
                                  'node': node})
         self.root_item = root
@@ -69,7 +108,7 @@ class Model(pigui.pyqt5.model.Model):
             node.value = self.data(index, 'value')
 
             try:
-                pifou.om.flush(node)
+                pifou.metadata.flush(node)
             except Exception as e:
                 # Put index back, so we may try again later.
                 self.save_queue.add(index)
@@ -98,14 +137,14 @@ class Model(pigui.pyqt5.model.Model):
         if not group and not '.' in name:
             name += '.string'  # Default to string
 
-        entry = pifou.om.Entry(name, parent=entry_parent)
+        entry = pifou.metadata.Entry(name, parent=entry_parent)
 
         if group:
             entry.isparent = True
 
         # Physically write to disk
         try:
-            pifou.om.flush(entry)
+            pifou.metadata.flush(entry)
         except Exception as e:
             return self.error.emit(e)
 
@@ -118,7 +157,7 @@ class Model(pigui.pyqt5.model.Model):
         node = self.data(index, 'node')
 
         try:
-            pifou.om.remove(node)
+            pifou.metadata.remove(node)
         except Exception as e:
             return self.error.emit(e)
 
@@ -128,8 +167,8 @@ class Model(pigui.pyqt5.model.Model):
         node = self.data(index, 'node')
 
         try:
-            pifou.om.pull(node)
-        except pifou.om.error.Exists:
+            pifou.metadata.pull(node)
+        except pifou.metadata.error.Exists:
             pass
 
         if node.isparent:

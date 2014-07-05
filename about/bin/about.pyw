@@ -11,13 +11,6 @@ def add_to_path():
     print "I: adding %r to PYTHONPATH" % root
 
 
-def check_dependencies():
-    import pifou
-    if pifou.missing_dependencies:
-        import pifou.error
-        raise pifou.error.Dependency(pifou.missing_dependencies)
-
-
 def get_path():
     try:
         path = sys.argv[1]
@@ -54,7 +47,6 @@ Press CTRL-C to quit..
 -----------------------
 '''
     print message
-    check_dependencies()
     add_to_path()
 
     import about.presentation
