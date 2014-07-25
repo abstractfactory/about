@@ -27,41 +27,49 @@ class Item(pigui.pyqt5.model.ModelItem):
             display (str): Name of OM object
             value (object): Value from OM object, this may be
                 of varying types and depends on the contained OM object.
-            isgroup (bool): Adapter for openmetadata.Entry.isparent
+            isgroup (bool): Equivalent to a folder on disk
 
     """
 
     def data(self, key):
-        """Expose Open Metadata propeties to model"""
+        """Expose Open Metadata propeties to model
+
+        Example:
+            >>> item = Item({'data1': 'key1'})
+            >>> item.data('data1')
+            'key1'
+
+        """
+
         value = super(Item, self).data(key)
 
         if not value and self.data('type') in ('entry', 'editor'):
             if key == 'path':
-                node = self.data('node')
-                value = node.path.as_str
+                resource = self.data('resource')
+                value = resource.path.as_str
 
             elif key == 'suffix':
-                node = self.data('node')
-                value = node.path.suffix
+                resource = self.data('resource')
+                value = resource.path.suffix
 
             elif key == 'display':
-                node = self.data('node')
-                value = node.name
+                resource = self.data('resource')
+                value = resource.name
 
             elif key == 'value':
-                node = self.data('node')
-                value = node.value
+                resource = self.data('resource')
+                value = resource.value
 
             elif key == 'isgroup':
-                value = self.data('node').isparent
+                value = self.data('resource').type in ('dict', 'list')
 
         return value
 
     def set_data(self, key, value):
         """Override :meth:`.set_data` from default implementation"""
         if key == 'path':
-            node = self.data('node')
-            node._path.set(value)
+            resource = self.data('resource')
+            resource._path.set(value)
         else:
             return super(Item, self).set_data(key, value)
 
@@ -95,20 +103,20 @@ class Model(pigui.pyqt5.model.Model):
 
         """
 
-        node = pifou.metadata.Location(location)
+        resource = pifou.metadata.Location(location)
         root = self.create_item({'type': 'entry',
-                                 'node': node})
+                                 'resource': resource})
         self.root_item = root
         self.model_reset.emit()
 
     def flush(self):
         while self.save_queue:
             index = self.save_queue.pop()
-            node = self.data(index, 'node')
-            node.value = self.data(index, 'value')
+            resource = self.data(index, 'resource')
+            resource.value = self.data(index, 'value')
 
             try:
-                pifou.metadata.flush(node)
+                pifou.metadata.flush(resource)
             except Exception as e:
                 # Put index back, so we may try again later.
                 self.save_queue.add(index)
@@ -132,15 +140,14 @@ class Model(pigui.pyqt5.model.Model):
 
         """
 
-        entry_parent = self.data(parent, 'node')
+        entry_parent = self.data(parent, 'resource')
 
         if not group and not '.' in name:
             name += '.string'  # Default to string
+        else:
+            name += '.dict'
 
         entry = pifou.metadata.Entry(name, parent=entry_parent)
-
-        if group:
-            entry.isparent = True
 
         # Physically write to disk
         try:
@@ -149,38 +156,38 @@ class Model(pigui.pyqt5.model.Model):
             return self.error.emit(e)
 
         self.add_item({'type': 'entry',
-                       'node': entry},
+                       'resource': entry},
                       parent=parent)
 
     def remove_item(self, index):
         # Physically remove `index`
-        node = self.data(index, 'node')
+        resource = self.data(index, 'resource')
 
         try:
-            pifou.metadata.remove(node)
+            pifou.metadata.remove(resource)
         except Exception as e:
             return self.error.emit(e)
 
         super(Model, self).remove_item(index)
 
     def pull(self, index):
-        node = self.data(index, 'node')
+        resource = self.data(index, 'resource')
 
         try:
-            pifou.metadata.pull(node)
+            pifou.metadata.pull(resource)
         except pifou.metadata.error.Exists:
             pass
 
-        if node.isparent:
-            for child in node:
+        if isinstance(resource, pifou.metadata.Location) or resource.type in ('dict', 'list'):
+            for child in resource:
                 self.create_item({'type': 'entry',
-                                  'node': child},
+                                  'resource': child},
                                  parent=index)
         else:
-            print "Adding editor to: %s" % node.path
+            print "Adding editor to: %s" % resource.path
             self.create_item({'type': 'editor',
-                              'node': node,
-                              'default': node.value},
+                              'resource': resource,
+                              'default': resource.value},
                              parent=index)
 
         super(Model, self).pull(index)
@@ -216,7 +223,28 @@ class Model(pigui.pyqt5.model.Model):
                 new = os.path.basename(new_path)
                 self.status.emit("Renamed {} to {}".format(old, new))
 
-            # Update node with new name
+            # Update resource with new name
             self.set_data(index, key='path', value=basename)
 
         super(Model, self).set_data(index, key, value)
+
+
+if __name__ == '__main__':
+    import shutil
+    import doctest
+    import tempfile
+    doctest.testmod()
+
+    try:
+        root = tempfile.mkdtemp()
+        pifou.metadata.write(root, 'spiderman', 'Project')
+        pifou.metadata.write(root, 'hulk', 'Project')
+        pifou.metadata.write(root, 'width', 25)
+
+        model = Model()
+        model.setup(root)
+        for child in model.children(model.root_item.index):
+            print repr(child.data('type'))
+
+    finally:
+        shutil.rmtree(root)
