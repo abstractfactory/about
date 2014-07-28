@@ -142,10 +142,11 @@ class Model(pigui.pyqt5.model.Model):
 
         entry_parent = self.data(parent, 'resource')
 
-        if not group and not '.' in name:
-            name += '.string'  # Default to string
-        else:
-            name += '.dict'
+        if not '.' in name:
+            if group:
+                name += '.dict'
+            else:
+                name += '.string'  # Default to string
 
         entry = pifou.metadata.Entry(name, parent=entry_parent)
 
