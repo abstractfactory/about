@@ -2,10 +2,10 @@
 https://github.com/abstractfactory/about
 
 Dependencies
-                 _____________     __________________
-                |             |   |                  |
-                |  widget.py  |   |  application.py  |
-                |_____________|   |__________________|
+             _________________     __________________
+            |                 |   |                  |
+            |  controller.py  |   |  application.py  |
+            |_________________|   |__________________|
                        |                    |
                        |____________________|
                                 |

@@ -110,6 +110,7 @@ class Model(pigui.pyqt5.model.Model):
         self.model_reset.emit()
 
     def flush(self):
+        """Physically write to disk"""
         while self.save_queue:
             index = self.save_queue.pop()
             resource = self.data(index, 'resource')
@@ -165,7 +166,7 @@ class Model(pigui.pyqt5.model.Model):
         resource = self.data(index, 'resource')
 
         try:
-            pifou.metadata.remove(resource)
+            pifou.metadata.recycle(resource)
         except Exception as e:
             return self.error.emit(e)
 
@@ -179,7 +180,8 @@ class Model(pigui.pyqt5.model.Model):
         except pifou.metadata.error.Exists:
             pass
 
-        if isinstance(resource, pifou.metadata.Location) or resource.type in ('dict', 'list'):
+        if (isinstance(resource, pifou.metadata.Location)
+                or resource.type in ('dict', 'list')):
             for child in resource:
                 self.create_item({'type': 'entry',
                                   'resource': child},
